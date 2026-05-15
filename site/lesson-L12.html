@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>L12 QueryHydration与CandidateSources — x-algorithm 学习教程</title>
+<style>
+:root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+nav { background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 0; position: sticky; top: 0; z-index: 10; }
+nav .container { display: flex; gap: 2rem; align-items: center; }
+nav .logo { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+nav a { color: var(--muted); font-size: 0.9rem; }
+nav a:hover { color: var(--text); text-decoration: none; }
+.hero { text-align: center; padding: 4rem 0 3rem; }
+.hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+.phase { margin-bottom: 2.5rem; }
+.phase-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; padding-left: 0.5rem; border-left: 3px solid; }
+.lessons-grid { display: grid; gap: 0.75rem; }
+.lesson-card { background: var(--card); border-radius: 0.5rem; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s, box-shadow 0.15s; }
+.lesson-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-decoration: none; }
+.lesson-card .num { font-size: 0.85rem; font-weight: 700; color: var(--muted); min-width: 2.5rem; }
+.lesson-card .title { color: var(--text); }
+.section-title { font-size: 1.5rem; font-weight: 700; margin: 3rem 0 1.5rem; }
+article { background: var(--card); border-radius: 0.75rem; padding: 2.5rem; margin: 2rem 0 3rem; }
+article h1 { font-size: 1.75rem; margin-bottom: 1.5rem; }
+article h2 { font-size: 1.35rem; margin: 2rem 0 0.75rem; color: var(--accent); }
+article h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+article p { margin-bottom: 1rem; }
+article ul, article ol { margin: 0.5rem 0 1rem 1.5rem; }
+article li { margin-bottom: 0.35rem; }
+article code { background: #334155; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
+article pre { background: #0f172a; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+article pre code { background: transparent; padding: 0; }
+article blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--muted); margin: 1rem 0; }
+article table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+article th, article td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
+article th { background: #334155; }
+article strong { color: #f1f5f9; }
+.breadcrumb { color: var(--muted); margin: 1.5rem 0 0; font-size: 0.9rem; }
+.breadcrumb a { color: var(--muted); }
+.nav-links { display: flex; justify-content: space-between; margin: 2rem 0 3rem; }
+.nav-links a { background: var(--card); padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; }
+footer { border-top: 1px solid #334155; padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: auto; }
+</style>
+</head>
+<body>
+<nav><div class="container">
+<span class="logo">📘 x-algorithm 学习教程</span>
+<a href="index.html">首页</a>
+<a href="learn.html">课程</a>
+<a href="interview.html">面试</a>
+</div></nav>
+<div class="container"><div class="breadcrumb"><a href="index.html">首页</a> / <a href="learn.html">课程</a> / L12</div><article><h1 id="l12-query-hydration-candidate-sources">L12 - Query Hydration 与 Candidate Sources</h1>
+<blockquote>
+<p><strong>"管道的前两步决定了信息流的'原材料'——用户画像越丰富，候选池越优质，最终推荐就越好。"</strong></p>
+</blockquote>
+<hr>
+<h2 id="_1">📌 本节目标</h2>
+<ol>
+<li>理解 UserActionSeqQueryHydrator 获取用户行为序列</li>
+<li>掌握 UserFeaturesQueryHydrator 获取关注列表</li>
+<li>了解 ThunderSource 的 In-Network 候选获取</li>
+<li>掌握 PhoenixSource 的 Out-of-Network 候选获取</li>
+<li>理解候选合并策略</li>
+</ol>
+<hr>
+<h2 id="_2">📚 前置知识</h2>
+<ul>
+<li>L06 Thunder / L10 Phoenix 检索</li>
+<li>L11 Home Mixer 架构</li>
+</ul>
+<hr>
+<h2 id="_3">正文讲解</h2>
+<h3 id="1-useractionseqqueryhydrator">1. UserActionSeqQueryHydrator——"了解用户"</h3>
+<blockquote>
+<p><strong>类比</strong>：这就像面试官在见面前先翻阅候选人的简历——了解你过去做了什么，才能判断你未来想要什么。</p>
+</blockquote>
+<pre><code class="language-rust">pub struct UserActionSeqQueryHydrator {
+    uas_client: Arc&lt;UASClient&gt;,  // User Action Sequence 服务
+}
+
+#[async_trait]
+impl QueryHydrator&lt;ScoredPostsQuery&gt; for UserActionSeqQueryHydrator {
+    async fn hydrate(&amp;self, query: ScoredPostsQuery) -&gt; ScoredPostsQuery {
+        // 1. 调用 UAS 服务获取用户最近的行为序列
+        let action_seq = self.uas_client
+            .get_actions(query.viewer_id, limit=500)
+            .await;
+
+        // action_seq 包含:
+        // - 用户最近交互的 500 条帖子 ID
+        // - 每条帖子的交互类型（点赞/回复/转发/点击...）
+        // - 交互时间戳
+        // - 帖子作者 ID
+
+        // 2. 填充到 query 中
+        ScoredPostsQuery {
+            user_action_sequence: Some(action_seq),
+            ..query
+        }
+    }
+}
+</code></pre>
+<p><strong>行为序列的结构：</strong></p>
+<pre><code>UserActionSequence {
+    actions: [
+        { post_id: 1001, author_id: 42, action: &quot;favorite&quot;, ts: 1715... },
+        { post_id: 1002, author_id: 55, action: &quot;reply&quot;,    ts: 1715... },
+        { post_id: 1003, author_id: 42, action: &quot;retweet&quot;,  ts: 1715... },
+        ... (最近 500 条)
+    ]
+}
+</code></pre>
+<p>这个序列直接喂给 Phoenix 排序模型作为 History，让 Transformer 学习用户的兴趣模式。</p>
+<h3 id="2-userfeaturesqueryhydrator">2. UserFeaturesQueryHydrator——"关注列表"</h3>
+<pre><code class="language-rust">pub struct UserFeaturesQueryHydrator {
+    strato_client: Arc&lt;StratoClient&gt;,
+}
+
+#[async_trait]
+impl QueryHydrator&lt;ScoredPostsQuery&gt; for UserFeaturesQueryHydrator {
+    async fn hydrate(&amp;self, query: ScoredPostsQuery) -&gt; ScoredPostsQuery {
+        // 获取用户的关注列表
+        let following_ids = self.strato_client
+            .get_following(query.viewer_id)
+            .await;
+
+        // 获取用户的屏蔽/静音列表
+        let blocked_ids = self.strato_client
+            .get_blocked(query.viewer_id)
+            .await;
+        let muted_ids = self.strato_client
+            .get_muted(query.viewer_id)
+            .await;
+
+        ScoredPostsQuery {
+            user_features: UserFeatures {
+                following_ids,
+                blocked_ids,
+                muted_ids,
+                ..query.user_features
+            },
+            ..query
+        }
+    }
+}
+</code></pre>
+<p><strong>关注列表用于两个地方：</strong>
+1. <strong>ThunderSource</strong>：告诉 Thunder "这个用户关注了谁"，Thunder 返回这些人的帖子
+2. <strong>AuthorSocialgraphFilter</strong>：屏蔽/静音列表用于过滤</p>
+<h3 id="3-thundersourcein-network">3. ThunderSource——In-Network 候选</h3>
+<pre><code class="language-rust">pub struct ThunderSource {
+    thunder_client: Arc&lt;ThunderClient&gt;,
+}
+
+#[async_trait]
+impl Source&lt;ScoredPostsQuery, PostCandidate&gt; for ThunderSource {
+    fn name(&amp;self) -&gt; &amp;str { &quot;ThunderSource&quot; }
+
+    async fn get(&amp;self, query: &amp;ScoredPostsQuery) -&gt; Vec&lt;PostCandidate&gt; {
+        // 1. 调用 Thunder 获取关注用户的帖子
+        let posts = self.thunder_client
+            .get_in_network_posts(
+                query.viewer_id,
+                &amp;query.user_features.following_ids,
+            )
+            .await;
+
+        // 2. 转换为 PostCandidate
+        posts.into_iter()
+            .map(|post| PostCandidate {
+                tweet_id: post.id,
+                author_id: post.author_id,
+                in_network: Some(true),  // 标记为 In-Network
+                ..Default::default()
+            })
+            .collect()
+    }
+}
+</code></pre>
+<p><strong>Thunder 返回的帖子特点：</strong>
+- 来源明确：全部来自用户关注的账号
+- 时间范围：最近 7 天内
+- 类型多样：原创、回复、转发、视频</p>
+<h3 id="4-phoenixsourceout-of-network">4. PhoenixSource——Out-of-Network 候选</h3>
+<pre><code class="language-rust">pub struct PhoenixSource {
+    phoenix_client: Arc&lt;PhoenixRetrievalClient&gt;,
+}
+
+#[async_trait]
+impl Source&lt;ScoredPostsQuery, PostCandidate&gt; for PhoenixSource {
+    fn name(&amp;self) -&gt; &amp;str { &quot;PhoenixSource&quot; }
+
+    fn enable(&amp;self, query: &amp;ScoredPostsQuery) -&gt; bool {
+        // 如果请求只要 In-Network，则禁用
+        !query.in_network_only
+    }
+
+    async fn get(&amp;self, query: &amp;ScoredPostsQuery) -&gt; Vec&lt;PostCandidate&gt; {
+        // 1. 调用 Phoenix 检索模型
+        let retrieval_results = self.phoenix_client
+            .retrieve(
+                query.viewer_id,
+                &amp;query.user_action_sequence,
+                top_k: 300,
+            )
+            .await;
+
+        // 2. 转换为 PostCandidate
+        retrieval_results.into_iter()
+            .map(|result| PostCandidate {
+                tweet_id: result.tweet_id,
+                author_id: result.author_id,
+                in_network: Some(false),  // 标记为 Out-of-Network
+                ..Default::default()
+            })
+            .collect()
+    }
+}
+</code></pre>
+<p><strong>Phoenix 检索的过程：</strong>
+1. User Tower 编码用户行为序列 → 用户向量
+2. 在预建的候选向量索引中 ANN 搜索
+3. 返回 Top-300 最相似的帖子</p>
+<h3 id="5">5. 候选合并策略</h3>
+<p>两个 Source 并行执行，结果直接合并：</p>
+<pre><code>ThunderSource (并行)  ──→  80 条 In-Network
+                                                ──→ 380 条合并候选
+PhoenixSource (并行)  ──→ 300 条 Out-of-Network
+</code></pre>
+<p>合并后候选通过 <code>in_network</code> 字段区分来源。后续的评分器（如 OONScorer）会根据来源调整分数。</p>
+<p><strong>In-Network vs Out-of-Network 的比例：</strong></p>
+<p>在典型场景中，约 20-30% 是 In-Network（你关注的人发的内容），70-80% 是 Out-of-Network（算法推荐的内容）。但由于 In-Network 内容与用户的关联更强，最终信息流中两者的比例会更接近 50:50。</p>
+<hr>
+<h2 id="_4">💡 本节小结</h2>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>数据源</th>
+<th>获取内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UserActionSeqHydrator</td>
+<td>UAS 服务</td>
+<td>最近 500 条行为记录</td>
+</tr>
+<tr>
+<td>UserFeaturesHydrator</td>
+<td>Strato</td>
+<td>关注/屏蔽/静音列表</td>
+</tr>
+<tr>
+<td>ThunderSource</td>
+<td>Thunder gRPC</td>
+<td>~80 条关注用户帖子</td>
+</tr>
+<tr>
+<td>PhoenixSource</td>
+<td>Phoenix Retrieval</td>
+<td>~300 条推荐帖子</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="12">📝 习题集12</h2>
+<p><strong>概念理解：</strong>
+1. 为什么 QueryHydrator 要并行执行？如果 UAS 服务响应慢，会发生什么？
+2. <code>PhoenixSource</code> 的 <code>enable()</code> 方法根据 <code>in_network_only</code> 决定是否执行。这种设计的好处是什么？</p>
+<p><strong>设计思考：</strong>
+3. 如果用户是新注册的（没有关注任何人，没有行为历史），这四个组件各自会返回什么？系统如何处理冷启动？
+4. 为什么 Out-of-Network 候选数（300）远多于 In-Network（80）？</p>
+<hr>
+<blockquote>
+<p>下一课我们将学习 <strong>L13 - Hydration 与 Filtering 详解</strong>。</p>
+</blockquote></article><div class="nav-links"><a href="lesson-L11.html">← L11 HomeMixer编排层总览</a><a href="lesson-L13.html">L13 Hydration与Filtering详解 →</a></div></div>
+<footer><div class="container">x-algorithm 学习教程 · 基于 X (Twitter) For You Feed 开源算法</div></footer>
+</body></html>

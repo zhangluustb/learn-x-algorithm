@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>L07 PhoenixGrok模型架构上 — x-algorithm 学习教程</title>
+<style>
+:root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+nav { background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 0; position: sticky; top: 0; z-index: 10; }
+nav .container { display: flex; gap: 2rem; align-items: center; }
+nav .logo { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+nav a { color: var(--muted); font-size: 0.9rem; }
+nav a:hover { color: var(--text); text-decoration: none; }
+.hero { text-align: center; padding: 4rem 0 3rem; }
+.hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+.phase { margin-bottom: 2.5rem; }
+.phase-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; padding-left: 0.5rem; border-left: 3px solid; }
+.lessons-grid { display: grid; gap: 0.75rem; }
+.lesson-card { background: var(--card); border-radius: 0.5rem; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s, box-shadow 0.15s; }
+.lesson-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-decoration: none; }
+.lesson-card .num { font-size: 0.85rem; font-weight: 700; color: var(--muted); min-width: 2.5rem; }
+.lesson-card .title { color: var(--text); }
+.section-title { font-size: 1.5rem; font-weight: 700; margin: 3rem 0 1.5rem; }
+article { background: var(--card); border-radius: 0.75rem; padding: 2.5rem; margin: 2rem 0 3rem; }
+article h1 { font-size: 1.75rem; margin-bottom: 1.5rem; }
+article h2 { font-size: 1.35rem; margin: 2rem 0 0.75rem; color: var(--accent); }
+article h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+article p { margin-bottom: 1rem; }
+article ul, article ol { margin: 0.5rem 0 1rem 1.5rem; }
+article li { margin-bottom: 0.35rem; }
+article code { background: #334155; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
+article pre { background: #0f172a; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+article pre code { background: transparent; padding: 0; }
+article blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--muted); margin: 1rem 0; }
+article table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+article th, article td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
+article th { background: #334155; }
+article strong { color: #f1f5f9; }
+.breadcrumb { color: var(--muted); margin: 1.5rem 0 0; font-size: 0.9rem; }
+.breadcrumb a { color: var(--muted); }
+.nav-links { display: flex; justify-content: space-between; margin: 2rem 0 3rem; }
+.nav-links a { background: var(--card); padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; }
+footer { border-top: 1px solid #334155; padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: auto; }
+</style>
+</head>
+<body>
+<nav><div class="container">
+<span class="logo">📘 x-algorithm 学习教程</span>
+<a href="index.html">首页</a>
+<a href="learn.html">课程</a>
+<a href="interview.html">面试</a>
+</div></nav>
+<div class="container"><div class="breadcrumb"><a href="index.html">首页</a> / <a href="learn.html">课程</a> / L07</div><article><h1 id="l07-phoenix-grok-transformer">L07 - Phoenix Grok 模型架构（上）：Transformer 核心</h1>
+<blockquote>
+<p><strong>"Grok-1 是为对话而生的，但经过巧妙适配，它成为了推荐系统的大脑。"</strong></p>
+</blockquote>
+<hr>
+<h2 id="_1">📌 本节目标</h2>
+<ol>
+<li>理解从 Grok-1 到推荐系统的适配思路</li>
+<li>掌握 TransformerConfig 配置参数</li>
+<li>深入 DecoderLayer 的 MHA + FFN 残差结构</li>
+<li>理解 GQA 在 x-algorithm 中的具体实现</li>
+<li>认识 SiLU 门控 FFN（DenseBlock）</li>
+</ol>
+<hr>
+<h2 id="_2">📚 前置知识</h2>
+<ul>
+<li>L02 中的 Transformer / Attention 基础</li>
+<li>L03 中的 JAX/Haiku 基本用法</li>
+</ul>
+<hr>
+<h2 id="_3">正文讲解</h2>
+<h3 id="1-grok-1">1. 从 Grok-1 到推荐系统的适配</h3>
+<blockquote>
+<p><strong>类比</strong>：Grok-1 原本是一位"全能翻译官"，能理解和生成自然语言。x-algorithm 把它改造成了一位"鉴赏师"——不再生成文字，而是观察用户的行为历史和候选帖子，预测用户会做出什么反应。</p>
+</blockquote>
+<p><strong>关键改动：</strong></p>
+<table>
+<thead>
+<tr>
+<th>方面</th>
+<th>Grok-1 (LLM)</th>
+<th>Phoenix (推荐)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>输入</td>
+<td>Token 序列</td>
+<td>用户行为序列 + 候选帖子</td>
+</tr>
+<tr>
+<td>输出</td>
+<td>下一个 Token 的概率</td>
+<td>19 种行为的概率</td>
+</tr>
+<tr>
+<td>注意力</td>
+<td>因果掩码（只看前文）</td>
+<td>因果 + 候选隔离掩码</td>
+</tr>
+<tr>
+<td>嵌入</td>
+<td>Token embedding</td>
+<td>Multi-hash embedding</td>
+</tr>
+<tr>
+<td>位置编码</td>
+<td>RoPE</td>
+<td>RoPE（保留）</td>
+</tr>
+</tbody>
+</table>
+<p>核心 Transformer 组件（Attention、FFN、RMSNorm、RoPE）完全复用 Grok-1，只改变了输入输出和注意力掩码。</p>
+<h3 id="2-transformerconfig">2. TransformerConfig 配置解读</h3>
+<pre><code class="language-python">@dataclass
+class TransformerConfig:
+    emb_size: int          # 嵌入维度（如 2048）
+    key_size: int          # 每个注意力头的维度（如 64）
+    num_q_heads: int       # Query 头数（如 32）
+    num_kv_heads: int      # Key/Value 头数（GQA，如 8）
+    num_layers: int        # Transformer 层数（如 12）
+    widening_factor: float # FFN 扩展倍数（默认 4.0）
+</code></pre>
+<p><strong>参数关系：</strong></p>
+<p>$$\text{hidden_dim} = \text{emb_size} = \text{key_size} \times \text{num_q_heads}$$</p>
+<p>$$\text{FFN_dim} = \text{emb_size} \times \text{widening_factor}$$</p>
+<p>例如：<code>emb_size=2048, key_size=64, num_q_heads=32, widening_factor=4.0</code>
+- 隐藏维度 = 2048
+- FFN 维度 = 8192
+- GQA 分组：32/8 = 每 4 个 Q 头共享一对 KV</p>
+<h3 id="3-decoderlayermha-ffn">3. DecoderLayer：MHA → FFN 残差结构</h3>
+<p>每个 DecoderLayer 包含两个子层，各自带有 RMSNorm 和残差连接：</p>
+<pre><code class="language-python">class DecoderLayer(hk.Module):
+    def __call__(self, x, mask, position):
+        # 子层 1: Multi-Head Attention
+        residual = x
+        x = RMSNorm()(x)                    # Pre-norm
+        x = MultiHeadAttention()(x, mask, position)
+        x = x + residual                     # 残差连接
+
+        # 子层 2: Feed-Forward Network
+        residual = x
+        x = RMSNorm()(x)                    # Pre-norm
+        x = DenseBlock()(x)                  # SiLU 门控 FFN
+        x = x + residual                     # 残差连接
+
+        return x
+</code></pre>
+<p><strong>Pre-Norm vs Post-Norm：</strong></p>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>公式</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Post-Norm</td>
+<td>$x + \text{SubLayer}(x)$, then Norm</td>
+<td>原始 Transformer</td>
+</tr>
+<tr>
+<td><strong>Pre-Norm</strong></td>
+<td>$x + \text{SubLayer}(\text{Norm}(x))$</td>
+<td>训练更稳定，x-algorithm 使用</td>
+</tr>
+</tbody>
+</table>
+<p>Pre-Norm 让残差路径上的梯度更加平滑，有利于深层网络训练。</p>
+<h3 id="4-gqa-x-algorithm">4. GQA 在 x-algorithm 中的实现</h3>
+<pre><code class="language-python">class MultiHeadAttention(hk.Module):
+    def __call__(self, x, mask, position):
+        # 1. 投影 Q, K, V
+        q = Linear(num_q_heads * key_size)(x)    # [B, L, H_q * D]
+        k = Linear(num_kv_heads * key_size)(x)   # [B, L, H_kv * D]
+        v = Linear(num_kv_heads * key_size)(x)   # [B, L, H_kv * D]
+
+        # 2. 重塑为多头
+        q = q.reshape(B, L, num_q_heads, key_size)   # [B, L, 32, 64]
+        k = k.reshape(B, L, num_kv_heads, key_size)  # [B, L, 8, 64]
+        v = v.reshape(B, L, num_kv_heads, key_size)   # [B, L, 8, 64]
+
+        # 3. 应用 RoPE 位置编码
+        q = RotaryEmbedding()(q, seq_len, offset)
+        k = RotaryEmbedding()(k, seq_len, offset)
+
+        # 4. GQA：将 KV 头扩展以匹配 Q 头数
+        #    每个 KV 头被 num_q_heads/num_kv_heads = 4 个 Q 头共享
+        k = repeat_kv(k, num_q_heads // num_kv_heads)  # [B, L, 32, 64]
+        v = repeat_kv(v, num_q_heads // num_kv_heads)   # [B, L, 32, 64]
+
+        # 5. 计算注意力
+        attn_weights = (q @ k.T) / sqrt(key_size)
+        attn_weights = attn_weights + mask    # 应用掩码
+        attn_weights = softmax(attn_weights)
+        output = attn_weights @ v
+
+        # 6. 合并多头 + 输出投影
+        output = output.reshape(B, L, num_q_heads * key_size)
+        output = Linear(emb_size)(output)
+        return output
+</code></pre>
+<p><strong>GQA 的内存节省：</strong></p>
+<p>$$\text{KV 缓存大小} = 2 \times \text{num_kv_heads} \times \text{key_size} \times \text{seq_len} \times \text{num_layers}$$</p>
+<p>使用 GQA (8 KV heads) 相比 MHA (32 KV heads)，KV 缓存减少了 <strong>75%</strong>。</p>
+<h3 id="5-silu-ffndenseblock">5. SiLU 门控 FFN（DenseBlock）</h3>
+<blockquote>
+<p><strong>类比</strong>：门控 FFN 就像一个"双通道过滤器"——一个通道处理信息，另一个通道决定"放行多少"。</p>
+</blockquote>
+<pre><code class="language-python">class DenseBlock(hk.Module):
+    def __call__(self, x):
+        # x: [B, L, emb_size]
+
+        # 门控分支：决定&quot;放行多少&quot;
+        gate = Linear(ffn_dim)(x)      # [B, L, ffn_dim]
+        gate = jax.nn.silu(gate)        # SiLU 激活
+
+        # 值分支：实际信息
+        value = Linear(ffn_dim)(x)      # [B, L, ffn_dim]
+
+        # 门控相乘
+        hidden = gate * value           # 逐元素乘法
+
+        # 降维回原始维度
+        output = Linear(emb_size)(hidden)  # [B, L, emb_size]
+        return output
+</code></pre>
+<p><strong>SiLU (Sigmoid Linear Unit)：</strong></p>
+<p>$$\text{SiLU}(x) = x \cdot \sigma(x) = \frac{x}{1 + e^{-x}}$$</p>
+<p>比 ReLU 更平滑，在 $x &lt; 0$ 时不完全截断，保留了一些负值信息。</p>
+<p><strong>门控机制的直觉：</strong>
+- <code>gate</code> 经过 SiLU 后，值域在 $(-0.28, +\infty)$
+- <code>value</code> 是原始变换后的信息
+- 两者相乘 = gate 控制 value 的"通行量"
+- 模型学会对不同维度"开关门"</p>
+<h3 id="6-transformer">6. Transformer：层层堆叠</h3>
+<pre><code class="language-python">class Transformer(hk.Module):
+    def __call__(self, x, mask, position):
+        for i in range(num_layers):
+            x = DecoderLayer(name=f&quot;layer_{i}&quot;)(x, mask, position)
+        x = RMSNorm()(x)  # 最终 norm
+        return x
+</code></pre>
+<p>每一层都在残差基础上"精炼"表示——浅层捕获局部模式，深层捕获全局语义。</p>
+<hr>
+<h2 id="_4">💡 本节小结</h2>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>一句话总结</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Grok 适配</td>
+<td>复用 Transformer 核心，改变输入输出和注意力掩码</td>
+</tr>
+<tr>
+<td>DecoderLayer</td>
+<td>Pre-Norm + MHA + 残差 + Pre-Norm + FFN + 残差</td>
+</tr>
+<tr>
+<td>GQA</td>
+<td>32 个 Q 头共享 8 对 KV，节省 75% KV 缓存</td>
+</tr>
+<tr>
+<td>SiLU 门控 FFN</td>
+<td>双分支结构，gate 控制 value 的通行量</td>
+</tr>
+<tr>
+<td>Transformer</td>
+<td>N 层 DecoderLayer 堆叠，逐层精炼表示</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="7">📝 习题集7</h2>
+<p><strong>概念理解：</strong>
+1. Pre-Norm 为什么比 Post-Norm 训练更稳定？从梯度流的角度分析。
+2. <code>widening_factor=4.0</code> 意味着 FFN 的中间维度是输入维度的 4 倍。为什么 FFN 需要"先扩展再压缩"？</p>
+<p><strong>数学推导：</strong>
+3. 计算 GQA 配置 <code>num_q_heads=32, num_kv_heads=8, key_size=64</code> 的 KV 缓存大小（假设序列长度 1000，12 层，bfloat16）。
+4. 证明 SiLU 的导数为 $\sigma(x)(1 + x(1-\sigma(x)))$，解释为什么它在零点附近梯度不为零。</p>
+<p><strong>设计思考：</strong>
+5. x-algorithm 为什么选择 12 层而不是更深的网络？推荐系统对延迟的要求如何影响模型选择？</p>
+<hr>
+<blockquote>
+<p>下一课我们将学习 <strong>L08 - Phoenix Grok 模型架构（下）：嵌入与注意力掩码</strong>，解锁 x-algorithm 的关键创新。</p>
+</blockquote></article><div class="nav-links"><a href="lesson-L06.html">← L06 Thunder实时帖子存储引擎</a><a href="lesson-L08.html">L08 PhoenixGrok模型架构下 →</a></div></div>
+<footer><div class="container">x-algorithm 学习教程 · 基于 X (Twitter) For You Feed 开源算法</div></footer>
+</body></html>

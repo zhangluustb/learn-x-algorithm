@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>L10 Phoenix检索模型双塔架构 — x-algorithm 学习教程</title>
+<style>
+:root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+nav { background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 0; position: sticky; top: 0; z-index: 10; }
+nav .container { display: flex; gap: 2rem; align-items: center; }
+nav .logo { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+nav a { color: var(--muted); font-size: 0.9rem; }
+nav a:hover { color: var(--text); text-decoration: none; }
+.hero { text-align: center; padding: 4rem 0 3rem; }
+.hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+.phase { margin-bottom: 2.5rem; }
+.phase-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; padding-left: 0.5rem; border-left: 3px solid; }
+.lessons-grid { display: grid; gap: 0.75rem; }
+.lesson-card { background: var(--card); border-radius: 0.5rem; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s, box-shadow 0.15s; }
+.lesson-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-decoration: none; }
+.lesson-card .num { font-size: 0.85rem; font-weight: 700; color: var(--muted); min-width: 2.5rem; }
+.lesson-card .title { color: var(--text); }
+.section-title { font-size: 1.5rem; font-weight: 700; margin: 3rem 0 1.5rem; }
+article { background: var(--card); border-radius: 0.75rem; padding: 2.5rem; margin: 2rem 0 3rem; }
+article h1 { font-size: 1.75rem; margin-bottom: 1.5rem; }
+article h2 { font-size: 1.35rem; margin: 2rem 0 0.75rem; color: var(--accent); }
+article h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+article p { margin-bottom: 1rem; }
+article ul, article ol { margin: 0.5rem 0 1rem 1.5rem; }
+article li { margin-bottom: 0.35rem; }
+article code { background: #334155; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
+article pre { background: #0f172a; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+article pre code { background: transparent; padding: 0; }
+article blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--muted); margin: 1rem 0; }
+article table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+article th, article td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
+article th { background: #334155; }
+article strong { color: #f1f5f9; }
+.breadcrumb { color: var(--muted); margin: 1.5rem 0 0; font-size: 0.9rem; }
+.breadcrumb a { color: var(--muted); }
+.nav-links { display: flex; justify-content: space-between; margin: 2rem 0 3rem; }
+.nav-links a { background: var(--card); padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; }
+footer { border-top: 1px solid #334155; padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: auto; }
+</style>
+</head>
+<body>
+<nav><div class="container">
+<span class="logo">📘 x-algorithm 学习教程</span>
+<a href="index.html">首页</a>
+<a href="learn.html">课程</a>
+<a href="interview.html">面试</a>
+</div></nav>
+<div class="container"><div class="breadcrumb"><a href="index.html">首页</a> / <a href="learn.html">课程</a> / L10</div><article><h1 id="l10-phoenix">L10 - Phoenix 检索模型：双塔架构</h1>
+<blockquote>
+<p><strong>"如何从 10 亿条帖子中找到你可能感兴趣的那几千条？双塔模型用向量相似度'秒答'。"</strong></p>
+</blockquote>
+<hr>
+<h2 id="_1">📌 本节目标</h2>
+<ol>
+<li>理解 Two-Tower 模型的基本原理</li>
+<li>掌握 User Tower 的编码过程</li>
+<li>了解 Candidate Tower 的嵌入与 L2 归一化</li>
+<li>理解 Dot Product 相似度搜索</li>
+<li>掌握 Top-K 检索流程</li>
+</ol>
+<hr>
+<h2 id="_2">📚 前置知识</h2>
+<ul>
+<li>L08 中的 Multi-Hash Embedding</li>
+<li>L09 中的 PhoenixModel 概念</li>
+</ul>
+<hr>
+<h2 id="_3">正文讲解</h2>
+<h3 id="1-two-tower">1. Two-Tower 模型——检索的核心思想</h3>
+<blockquote>
+<p><strong>类比</strong>：双塔模型就像"相亲平台"——一个塔把你的喜好编码成一张"趣味卡片"，另一个塔把每条帖子编码成一张"内容卡片"。匹配度最高的帖子就是你最可能喜欢的。</p>
+</blockquote>
+<pre><code>              User Tower                    Candidate Tower
+        ┌─────────────────┐           ┌─────────────────────┐
+        │ 用户哈希嵌入      │           │ 帖子哈希嵌入          │
+        │ 历史行为序列      │           │ 作者哈希嵌入          │
+        │ 行为类型嵌入      │           │ 产品界面嵌入          │
+        └────────┬────────┘           └─────────┬───────────┘
+                 │                               │
+                 ▼                               ▼
+        ┌─────────────────┐           ┌─────────────────────┐
+        │   Reduction +    │           │   Reduction +        │
+        │   Transformer    │           │   L2 归一化           │
+        └────────┬────────┘           └─────────┬───────────┘
+                 │                               │
+                 ▼                               ▼
+            user_repr                      candidate_repr
+           [1, emb_size]              [N_corpus, emb_size]
+                 │                               │
+                 └──────── dot product ──────────┘
+                                │
+                                ▼
+                         similarity scores
+                        Top-K 最相似的帖子
+</code></pre>
+<p><strong>关键设计：双塔独立编码</strong></p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>优势</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User 和 Candidate 独立计算</td>
+<td>Candidate 嵌入可以离线预计算</td>
+</tr>
+<tr>
+<td>向量维度相同</td>
+<td>可以用高效的 ANN 索引（如 FAISS）</td>
+</tr>
+<tr>
+<td>点积相似度</td>
+<td>计算极快，支持海量检索</td>
+</tr>
+</tbody>
+</table>
+<h3 id="2-user-tower">2. User Tower：用户特征编码</h3>
+<p>User Tower 复用了排序模型的 Transformer 架构，但只取用户表示：</p>
+<pre><code class="language-python">class PhoenixRetrievalModel(hk.Module):
+    def __call__(self, batch: RecsysBatch) -&gt; RetrievalOutput:
+        # 1. 嵌入查表
+        embeddings = self._lookup_embeddings(batch)
+
+        # 2. User + History Reduction
+        user_repr = block_user_reduce(embeddings.user)
+        history_repr = block_history_reduce(
+            embeddings.history_posts,
+            embeddings.history_authors,
+            batch.history_actions,
+            batch.history_product_surface
+        )
+
+        # 3. 拼接 User + History
+        context = jnp.concatenate(
+            [user_repr, history_repr], axis=1
+        )  # [B, 1+H, emb_size]
+
+        # 4. causal mask（只有上下文部分）
+        mask = build_causal_mask(1 + history_seq_len)
+
+        # 5. Transformer 编码
+        output = Transformer(config)(context, mask, positions)
+
+        # 6. 取最后一个位置作为用户表示
+        user_representation = output[:, -1, :]  # [B, emb_size]
+
+        return user_representation
+</code></pre>
+<p><strong>为什么取最后一个位置？</strong> 因为因果注意力下，最后一个位置能"看到"前面所有的信息——它是整个用户上下文的"摘要"。</p>
+<h3 id="3-candidate-tower">3. Candidate Tower：帖子嵌入</h3>
+<p>Candidate Tower 相对简单——不需要 Transformer，只需要将帖子的多哈希嵌入压缩并归一化：</p>
+<pre><code class="language-python">class CandidateTower(hk.Module):
+    def __call__(self, post_embeddings, author_embeddings):
+        # 1. Reduction：合并帖子+作者的多哈希嵌入
+        concat = jnp.concatenate(
+            [post_embeddings, author_embeddings], axis=-1
+        )
+        repr = Linear(emb_size)(concat)  # [N, emb_size]
+
+        # 2. L2 归一化
+        repr = repr / jnp.linalg.norm(repr, axis=-1, keepdims=True)
+
+        return repr  # [N, emb_size], L2 norm = 1
+</code></pre>
+<p><strong>为什么要 L2 归一化？</strong></p>
+<p>当两个向量都是单位向量时：</p>
+<p>$$\text{dot}(\mathbf{u}, \mathbf{v}) = \cos(\theta)$$</p>
+<p>点积 = 余弦相似度，值域 $[-1, 1]$，含义清晰：
+- $1$ = 完全匹配
+- $0$ = 无关
+- $-1$ = 完全相反</p>
+<h3 id="4-dot-product">4. Dot Product 相似度检索</h3>
+<pre><code class="language-python">def retrieve_top_k(user_repr, candidate_pool, k=1000):
+    &quot;&quot;&quot;
+    user_repr: [1, emb_size]         # 一个用户
+    candidate_pool: [N, emb_size]     # N 个候选（全量语料库）
+    &quot;&quot;&quot;
+    # 点积计算相似度
+    scores = user_repr @ candidate_pool.T  # [1, N]
+
+    # 取 Top-K
+    top_k_indices = jnp.argsort(scores, axis=-1)[:, -k:][:, ::-1]
+    top_k_scores = jnp.take_along_axis(scores, top_k_indices, axis=-1)
+
+    return RetrievalOutput(
+        user_representation=user_repr,
+        top_k_indices=top_k_indices,    # [1, K]
+        top_k_scores=top_k_scores,      # [1, K]
+    )
+</code></pre>
+<p><strong>实际生产中的优化：</strong></p>
+<p>直接对 10 亿候选做暴力点积太慢。生产环境使用<strong>近似最近邻（ANN）</strong>索引：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>原理</th>
+<th>延迟</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>暴力搜索</td>
+<td>遍历全部候选</td>
+<td>$O(N)$，秒级</td>
+</tr>
+<tr>
+<td><strong>HNSW</strong></td>
+<td>分层导航小世界图</td>
+<td>$O(\log N)$，毫秒级</td>
+</tr>
+<tr>
+<td><strong>IVF</strong></td>
+<td>倒排文件索引</td>
+<td>$O(N/K)$，毫秒级</td>
+</tr>
+<tr>
+<td><strong>ScaNN</strong></td>
+<td>量化 + 各向异性</td>
+<td>$O(\sqrt{N})$，亚毫秒</td>
+</tr>
+</tbody>
+</table>
+<p>候选帖子的嵌入<strong>离线计算并建立索引</strong>，在线时只需：
+1. 计算用户嵌入（User Tower 前向传播）
+2. 在索引中查找最近邻（ANN 检索）</p>
+<h3 id="5-top-k-run_retrievalpy">5. Top-K 检索流程（run_retrieval.py）</h3>
+<pre><code class="language-python"># run_retrieval.py 的完整流程
+
+# 1. 配置检索模型
+config = PhoenixModelConfig(
+    model=TransformerConfig(
+        emb_size=256,
+        key_size=32,
+        num_q_heads=8,
+        num_kv_heads=2,
+        num_layers=4,
+    ),
+    history_seq_len=50,
+    candidate_seq_len=0,  # 检索时不需要候选（只编码用户）
+)
+
+# 2. 初始化模型
+retrieval_model = create_retrieval_runner(config)
+
+# 3. 构造用户输入
+user_batch = RecsysBatch(
+    user_hashes=...,
+    history_post_hashes=...,
+    history_author_hashes=...,
+    history_actions=...,
+    # candidate 字段为空
+)
+
+# 4. 编码用户
+user_repr = retrieval_model.encode_user(user_batch)
+# [1, 256]
+
+# 5. 准备候选池（通常离线完成）
+candidate_pool = retrieval_model.encode_candidates(all_posts)
+# [1_000_000, 256]
+
+# 6. 检索 Top-K
+results = retrieve_top_k(user_repr, candidate_pool, k=1000)
+print(f&quot;Top-K indices: {results.top_k_indices}&quot;)
+print(f&quot;Top-K scores:  {results.top_k_scores}&quot;)
+</code></pre>
+<p><strong>检索与排序的配合：</strong></p>
+<pre><code>Phoenix Retrieval (双塔)          Phoenix Ranking (Transformer)
+10 亿帖子 → Top-1000 候选    →    1000 候选 → 精排 Top-50
+  快速但粗糙                        慢但精准
+  毫秒级                            10-100 毫秒
+</code></pre>
+<p>这就是经典的"漏斗架构"——检索层快速缩小范围，排序层精细打分。</p>
+<hr>
+<h2 id="_4">💡 本节小结</h2>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>一句话总结</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Two-Tower</td>
+<td>用户和候选独立编码，通过点积匹配</td>
+</tr>
+<tr>
+<td>User Tower</td>
+<td>Transformer 编码 User + History，取最后位置输出</td>
+</tr>
+<tr>
+<td>Candidate Tower</td>
+<td>Reduction + L2 归一化，生成单位向量</td>
+</tr>
+<tr>
+<td>ANN 索引</td>
+<td>HNSW/IVF/ScaNN 实现毫秒级海量检索</td>
+</tr>
+<tr>
+<td>漏斗架构</td>
+<td>检索（粗排）→ 排序（精排）→ 重排</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="10">📝 习题集10</h2>
+<p><strong>概念理解：</strong>
+1. 为什么 Candidate Tower 比 User Tower 简单得多？可以给 Candidate Tower 也加 Transformer 吗？
+2. L2 归一化后点积等于余弦相似度。如果不归一化，点积在推荐场景中会有什么问题？</p>
+<p><strong>数学推导：</strong>
+3. 假设嵌入维度 256，候选池 1000 万。计算暴力检索的 FLOP 数，与 HNSW（假设平均访问 1000 个节点）对比。</p>
+<p><strong>设计思考：</strong>
+4. 双塔模型的一个缺点是用户和候选的交互只通过点积，无法建模复杂交互。x-algorithm 如何通过"检索+排序"两阶段弥补这个缺点？
+5. 候选嵌入多久需要更新一次？如何平衡索引更新的计算成本和内容新鲜度？</p>
+<hr>
+<blockquote>
+<p>下一课我们将进入第三部分——<strong>L11 - Home Mixer 编排层总览</strong>，看四大模块如何协同工作。</p>
+</blockquote></article><div class="nav-links"><a href="lesson-L09.html">← L09 Phoenix排序模型多行为预测</a><a href="lesson-L11.html">L11 HomeMixer编排层总览 →</a></div></div>
+<footer><div class="container">x-algorithm 学习教程 · 基于 X (Twitter) For You Feed 开源算法</div></footer>
+</body></html>

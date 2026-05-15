@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>L17 性能优化与工程实践 — x-algorithm 学习教程</title>
+<style>
+:root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+nav { background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 0; position: sticky; top: 0; z-index: 10; }
+nav .container { display: flex; gap: 2rem; align-items: center; }
+nav .logo { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+nav a { color: var(--muted); font-size: 0.9rem; }
+nav a:hover { color: var(--text); text-decoration: none; }
+.hero { text-align: center; padding: 4rem 0 3rem; }
+.hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+.phase { margin-bottom: 2.5rem; }
+.phase-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; padding-left: 0.5rem; border-left: 3px solid; }
+.lessons-grid { display: grid; gap: 0.75rem; }
+.lesson-card { background: var(--card); border-radius: 0.5rem; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s, box-shadow 0.15s; }
+.lesson-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-decoration: none; }
+.lesson-card .num { font-size: 0.85rem; font-weight: 700; color: var(--muted); min-width: 2.5rem; }
+.lesson-card .title { color: var(--text); }
+.section-title { font-size: 1.5rem; font-weight: 700; margin: 3rem 0 1.5rem; }
+article { background: var(--card); border-radius: 0.75rem; padding: 2.5rem; margin: 2rem 0 3rem; }
+article h1 { font-size: 1.75rem; margin-bottom: 1.5rem; }
+article h2 { font-size: 1.35rem; margin: 2rem 0 0.75rem; color: var(--accent); }
+article h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+article p { margin-bottom: 1rem; }
+article ul, article ol { margin: 0.5rem 0 1rem 1.5rem; }
+article li { margin-bottom: 0.35rem; }
+article code { background: #334155; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
+article pre { background: #0f172a; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+article pre code { background: transparent; padding: 0; }
+article blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--muted); margin: 1rem 0; }
+article table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+article th, article td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
+article th { background: #334155; }
+article strong { color: #f1f5f9; }
+.breadcrumb { color: var(--muted); margin: 1.5rem 0 0; font-size: 0.9rem; }
+.breadcrumb a { color: var(--muted); }
+.nav-links { display: flex; justify-content: space-between; margin: 2rem 0 3rem; }
+.nav-links a { background: var(--card); padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; }
+footer { border-top: 1px solid #334155; padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: auto; }
+</style>
+</head>
+<body>
+<nav><div class="container">
+<span class="logo">📘 x-algorithm 学习教程</span>
+<a href="index.html">首页</a>
+<a href="learn.html">课程</a>
+<a href="interview.html">面试</a>
+</div></nav>
+<div class="container"><div class="breadcrumb"><a href="index.html">首页</a> / <a href="learn.html">课程</a> / L17</div><article><h1 id="l17-">L17 - 性能优化与工程实践</h1>
+<blockquote>
+<p><strong>"在推荐系统中，慢 100ms 意味着流失 1% 的用户——每一毫秒都价值连城。"</strong></p>
+</blockquote>
+<hr>
+<h2 id="_1">📌 本节目标</h2>
+<ol>
+<li>理解混合精度推理（bfloat16）的性能收益</li>
+<li>掌握 DashMap 无锁并发读写的原理</li>
+<li>了解 Semaphore 背压与流量控制</li>
+<li>认识 Kafka 消费与内存管理策略</li>
+<li>理解 gRPC + Zstd 压缩传输</li>
+</ol>
+<hr>
+<h2 id="_2">正文讲解</h2>
+<h3 id="1-bfloat16">1. 混合精度推理（bfloat16）</h3>
+<p>Phoenix 模型使用 fp32 存储参数、bfloat16 计算推理：</p>
+<table>
+<thead>
+<tr>
+<th>数据类型</th>
+<th>内存</th>
+<th>计算速度</th>
+<th>使用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>float32</td>
+<td>4字节/参数</td>
+<td>1x</td>
+<td>参数存储、梯度累积</td>
+</tr>
+<tr>
+<td>bfloat16</td>
+<td>2字节/参数</td>
+<td><strong>2-4x</strong></td>
+<td>前向传播、矩阵乘法</td>
+</tr>
+</tbody>
+</table>
+<p><strong>性能收益：</strong>
+- 内存带宽减半 → 更多数据进 GPU 缓存
+- 硬件有专用的 bfloat16 矩阵计算单元（如 TPU bfloat16 MXU）
+- 推理延迟可降低 40-60%</p>
+<h3 id="2-dashmap">2. DashMap 无锁并发</h3>
+<p>Thunder 的 PostStore 用 <code>DashMap</code> 替代标准 <code>HashMap + Mutex</code>：</p>
+<pre><code class="language-rust">// DashMap 内部结构（简化）
+struct DashMap&lt;K, V&gt; {
+    shards: Vec&lt;RwLock&lt;HashMap&lt;K, V&gt;&gt;&gt;,  // N 个分片，通常 N = CPU 核数 * 4
+}
+</code></pre>
+<p><strong>分片策略</strong>：根据 key 的哈希值分配到不同 shard。不同 shard 的读写完全独立，不会互相阻塞。</p>
+<pre><code>线程1: 读 user_123 的帖子 → shard[5].read_lock()
+线程2: 写 user_456 的新帖 → shard[12].write_lock()
+线程3: 读 user_789 的帖子 → shard[3].read_lock()
+                                     ↓
+                          三个线程完全并行，零竞争
+</code></pre>
+<h3 id="3-semaphore">3. Semaphore 背压控制</h3>
+<pre><code class="language-rust">struct ThunderServiceImpl {
+    request_semaphore: Arc&lt;Semaphore&gt;,  // 如 permits = 1000
+}
+</code></pre>
+<p><strong>为什么需要限流？</strong></p>
+<table>
+<thead>
+<tr>
+<th>无限流</th>
+<th>有 Semaphore</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>突发流量导致 OOM</td>
+<td>超出容量的请求排队等待</td>
+</tr>
+<tr>
+<td>响应时间飙升</td>
+<td>保持稳定的响应时间</td>
+</tr>
+<tr>
+<td>级联故障</td>
+<td>优雅降级</td>
+</tr>
+</tbody>
+</table>
+<h3 id="4-kafka">4. Kafka 消费与内存管理</h3>
+<p>Thunder 的 Kafka 消费策略：</p>
+<pre><code>Kafka → 消费 → 过滤过期事件 → 插入 PostStore → 定时裁剪
+</code></pre>
+<p><strong>内存管理要点：</strong>
+- <code>TinyPost</code>（仅 16 字节）用于索引，<code>LightPost</code> 用于全量数据
+- 7 天 TTL 自动裁剪，防止无限增长
+- <code>VecDeque</code> 从尾部 pop 过期数据，O(1) 操作</p>
+<h3 id="5-grpc-zstd">5. gRPC + Zstd 压缩</h3>
+<p>Thunder 和 Home Mixer 之间的 gRPC 通信使用 Zstd 压缩：</p>
+<table>
+<thead>
+<tr>
+<th>压缩算法</th>
+<th>压缩率</th>
+<th>速度</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gzip</td>
+<td>60-70%</td>
+<td>慢</td>
+<td>通用</td>
+</tr>
+<tr>
+<td>snappy</td>
+<td>40-50%</td>
+<td>极快</td>
+<td>低延迟</td>
+</tr>
+<tr>
+<td><strong>zstd</strong></td>
+<td><strong>65-75%</strong></td>
+<td><strong>快</strong></td>
+<td><strong>高压缩率 + 低延迟</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Zstd 在推荐系统中是最佳选择——兼顾了压缩率和速度。</p>
+<hr>
+<h2 id="_3">💡 本节小结</h2>
+<table>
+<thead>
+<tr>
+<th>优化技术</th>
+<th>收益</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>bfloat16 推理</td>
+<td>延迟 -40-60%，内存 -50%</td>
+</tr>
+<tr>
+<td>DashMap 分片</td>
+<td>读写无锁并行</td>
+</tr>
+<tr>
+<td>Semaphore</td>
+<td>流量控制，防止过载</td>
+</tr>
+<tr>
+<td>TTL + 裁剪</td>
+<td>内存可控</td>
+</tr>
+<tr>
+<td>Zstd 压缩</td>
+<td>网络带宽 -70%</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="17">📝 习题集17</h2>
+<ol>
+<li>bfloat16 比 float16 在推荐系统中更适合的原因是什么？</li>
+<li>DashMap 的分片数应该设为多少？设太少或太多各有什么问题？</li>
+<li>如果 Semaphore permits = 1000 且当前有 1200 个并发请求，前 1000 个的延迟和后 200 个的延迟分别是多少？</li>
+<li>设计一个实验：对比 gzip/snappy/zstd 在推荐响应上的压缩率和延迟。</li>
+</ol>
+<hr>
+<blockquote>
+<p>下一课我们将学习 <strong>L18 - 部署架构与监控</strong>。</p>
+</blockquote></article><div class="nav-links"><a href="lesson-L16.html">← L16 系统设计深度分析</a><a href="lesson-L18.html">L18 部署架构与监控 →</a></div></div>
+<footer><div class="container">x-algorithm 学习教程 · 基于 X (Twitter) For You Feed 开源算法</div></footer>
+</body></html>

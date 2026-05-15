@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>L11 HomeMixer编排层总览 — x-algorithm 学习教程</title>
+<style>
+:root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+nav { background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 0; position: sticky; top: 0; z-index: 10; }
+nav .container { display: flex; gap: 2rem; align-items: center; }
+nav .logo { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+nav a { color: var(--muted); font-size: 0.9rem; }
+nav a:hover { color: var(--text); text-decoration: none; }
+.hero { text-align: center; padding: 4rem 0 3rem; }
+.hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+.phase { margin-bottom: 2.5rem; }
+.phase-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; padding-left: 0.5rem; border-left: 3px solid; }
+.lessons-grid { display: grid; gap: 0.75rem; }
+.lesson-card { background: var(--card); border-radius: 0.5rem; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s, box-shadow 0.15s; }
+.lesson-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-decoration: none; }
+.lesson-card .num { font-size: 0.85rem; font-weight: 700; color: var(--muted); min-width: 2.5rem; }
+.lesson-card .title { color: var(--text); }
+.section-title { font-size: 1.5rem; font-weight: 700; margin: 3rem 0 1.5rem; }
+article { background: var(--card); border-radius: 0.75rem; padding: 2.5rem; margin: 2rem 0 3rem; }
+article h1 { font-size: 1.75rem; margin-bottom: 1.5rem; }
+article h2 { font-size: 1.35rem; margin: 2rem 0 0.75rem; color: var(--accent); }
+article h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+article p { margin-bottom: 1rem; }
+article ul, article ol { margin: 0.5rem 0 1rem 1.5rem; }
+article li { margin-bottom: 0.35rem; }
+article code { background: #334155; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
+article pre { background: #0f172a; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+article pre code { background: transparent; padding: 0; }
+article blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--muted); margin: 1rem 0; }
+article table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+article th, article td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
+article th { background: #334155; }
+article strong { color: #f1f5f9; }
+.breadcrumb { color: var(--muted); margin: 1.5rem 0 0; font-size: 0.9rem; }
+.breadcrumb a { color: var(--muted); }
+.nav-links { display: flex; justify-content: space-between; margin: 2rem 0 3rem; }
+.nav-links a { background: var(--card); padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; }
+footer { border-top: 1px solid #334155; padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: auto; }
+</style>
+</head>
+<body>
+<nav><div class="container">
+<span class="logo">📘 x-algorithm 学习教程</span>
+<a href="index.html">首页</a>
+<a href="learn.html">课程</a>
+<a href="interview.html">面试</a>
+</div></nav>
+<div class="container"><div class="breadcrumb"><a href="index.html">首页</a> / <a href="learn.html">课程</a> / L11</div><article><h1 id="l11-home-mixer">L11 - Home Mixer 编排层总览</h1>
+<blockquote>
+<p><strong>"如果 Thunder 是食材供应商，Phoenix 是大厨，那 Home Mixer 就是餐厅经理——协调一切，确保每道菜按时上桌。"</strong></p>
+</blockquote>
+<hr>
+<h2 id="_1">📌 本节目标</h2>
+<ol>
+<li>理解 ScoredPostsService gRPC 端点</li>
+<li>掌握 PhoenixCandidatePipeline 的组装方式</li>
+<li>熟悉 Query 与 PostCandidate 数据结构</li>
+<li>追踪一次请求的完整生命周期</li>
+</ol>
+<hr>
+<h2 id="_2">📚 前置知识</h2>
+<ul>
+<li>L05 中的 Candidate Pipeline 框架</li>
+<li>L06 Thunder / L09-L10 Phoenix 的基本概念</li>
+</ul>
+<hr>
+<h2 id="_3">正文讲解</h2>
+<h3 id="1-scoredpostsservice">1. ScoredPostsService——对外接口</h3>
+<p>Home Mixer 通过 gRPC 暴露一个简洁的接口：</p>
+<pre><code class="language-rust">// server.rs
+pub struct ScoredPostsServiceImpl {
+    pipeline: PhoenixCandidatePipeline,
+}
+
+impl ScoredPostsService for ScoredPostsServiceImpl {
+    async fn get_scored_posts(
+        &amp;self, 
+        request: ScoredPostsRequest
+    ) -&gt; ScoredPostsResponse {
+        // 1. 构造 Query
+        let query = ScoredPostsQuery::from(request);
+
+        // 2. 执行管道
+        let result = self.pipeline.execute(query).await;
+
+        // 3. 转换为响应
+        ScoredPostsResponse {
+            scored_posts: result.selected_candidates
+                .into_iter()
+                .map(|c| to_scored_post(c))
+                .collect(),
+        }
+    }
+}
+</code></pre>
+<p><strong>响应结构：</strong></p>
+<pre><code class="language-rust">pub struct ScoredPost {
+    tweet_id: i64,
+    author_id: u64,
+    score: f64,                         // 最终加权分数
+    in_network: bool,                   // 是否来自关注用户
+    served_type: ServedType,            // ForYouPhoenixRetrieval | ForYouInNetwork
+    screen_names: HashMap&lt;u64, String&gt;, // 作者昵称映射
+    retweeted_tweet_id: Option&lt;u64&gt;,    // 如果是转发
+}
+</code></pre>
+<h3 id="2-phoenixcandidatepipeline">2. PhoenixCandidatePipeline——管道组装</h3>
+<pre><code class="language-rust">pub fn build_phoenix_candidate_pipeline() -&gt; CandidatePipeline&lt;
+    ScoredPostsQuery, PostCandidate
+&gt; {
+    CandidatePipeline::builder()
+        // === Query Hydrators（并行）===
+        .query_hydrator(Box::new(UserActionSeqQueryHydrator::new()))
+        .query_hydrator(Box::new(UserFeaturesQueryHydrator::new()))
+
+        // === Sources（并行）===
+        .source(Box::new(ThunderSource::new()))
+        .source(Box::new(PhoenixSource::new()))
+
+        // === Hydrators（并行）===
+        .hydrator(Box::new(InNetworkCandidateHydrator::new()))
+        .hydrator(Box::new(CoreDataCandidateHydrator::new()))
+        .hydrator(Box::new(VideoDurationCandidateHydrator::new()))
+        .hydrator(Box::new(SubscriptionHydrator::new()))
+        .hydrator(Box::new(GizmoduckCandidateHydrator::new()))
+
+        // === Filters（顺序）===
+        .filter(Box::new(DropDuplicatesFilter::new()))
+        .filter(Box::new(CoreDataHydrationFilter::new()))
+        .filter(Box::new(AgeFilter::new(30 * 24 * 3600))) // 30 天
+        .filter(Box::new(SelfTweetFilter::new()))
+        .filter(Box::new(RetweetDeduplicationFilter::new()))
+        .filter(Box::new(IneligibleSubscriptionFilter::new()))
+        .filter(Box::new(PreviouslySeenPostsFilter::new()))
+        .filter(Box::new(PreviouslyServedPostsFilter::new()))
+        .filter(Box::new(MutedKeywordFilter::new()))
+        .filter(Box::new(AuthorSocialgraphFilter::new()))
+
+        // === Scorers（顺序）===
+        .scorer(Box::new(PhoenixScorer::new()))
+        .scorer(Box::new(WeightedScorer::new()))
+        .scorer(Box::new(AuthorDiversityScorer::new()))
+        .scorer(Box::new(OONScorer::new()))
+
+        // === Selector ===
+        .selector(Box::new(TopKScoreSelector::new(50)))
+
+        // === Post-Selection ===
+        .post_selection_hydrator(Box::new(VFCandidateHydrator::new()))
+        .post_selection_filter(Box::new(VFFilter::new()))
+        .post_selection_filter(Box::new(DedupConversationFilter::new()))
+
+        // === Side Effects ===
+        .side_effect(Box::new(CacheRequestInfoSideEffect::new()))
+
+        .build()
+}
+</code></pre>
+<p>这就是整个 For You 信息流的"配方"——所有组件以声明式方式挂载。</p>
+<h3 id="3-scoredpostsquery">3. ScoredPostsQuery——请求上下文</h3>
+<pre><code class="language-rust">pub struct ScoredPostsQuery {
+    // === 原始请求字段 ===
+    pub viewer_id: u64,            // 请求用户 ID
+    pub client_app_id: i32,        // 客户端应用 ID
+    pub country_code: String,      // 国家代码
+    pub language_code: String,     // 语言代码
+    pub seen_ids: Vec&lt;u64&gt;,        // 已看过的帖子 ID
+    pub served_ids: Vec&lt;u64&gt;,      // 已推送过的帖子 ID
+    pub in_network_only: bool,     // 是否只要关注用户内容
+    pub is_bottom_request: bool,   // 是否是上拉加载
+    pub bloom_filter_entries: Vec&lt;u64&gt;,  // 布隆过滤器
+
+    // === Hydrator 填充的字段 ===
+    pub user_action_sequence: Option&lt;UserActionSequence&gt;,
+    pub user_features: UserFeatures,
+}
+</code></pre>
+<h3 id="4-postcandidate">4. PostCandidate——候选帖子</h3>
+<pre><code class="language-rust">pub struct PostCandidate {
+    // === 基础信息 ===
+    pub tweet_id: i64,
+    pub author_id: u64,
+    pub tweet_text: String,
+
+    // === 社交关系 ===
+    pub in_reply_to_tweet_id: Option&lt;u64&gt;,
+    pub retweeted_tweet_id: Option&lt;u64&gt;,
+    pub retweeted_user_id: Option&lt;u64&gt;,
+    pub in_network: Option&lt;bool&gt;,
+
+    // === ML 评分 ===
+    pub phoenix_scores: PhoenixScores,   // 19 维预测
+    pub weighted_score: Option&lt;f64&gt;,      // 加权综合分
+    pub score: Option&lt;f64&gt;,               // 最终分数
+
+    // === 元数据 ===
+    pub author_followers_count: Option&lt;i32&gt;,
+    pub author_screen_name: Option&lt;String&gt;,
+    pub video_duration_ms: Option&lt;i32&gt;,
+    pub visibility_reason: Option&lt;FilteredReason&gt;,
+    pub ancestors: Vec&lt;u64&gt;,              // 对话线索
+}
+</code></pre>
+<p><strong>候选的"成长历程"：</strong></p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>填充的字段</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Source</td>
+<td>tweet_id, author_id</td>
+</tr>
+<tr>
+<td>CoreDataHydrator</td>
+<td>tweet_text, in_reply_to, retweeted_*</td>
+</tr>
+<tr>
+<td>InNetworkHydrator</td>
+<td>in_network</td>
+</tr>
+<tr>
+<td>GizmoduckHydrator</td>
+<td>author_followers_count, screen_name</td>
+</tr>
+<tr>
+<td>PhoenixScorer</td>
+<td>phoenix_scores</td>
+</tr>
+<tr>
+<td>WeightedScorer</td>
+<td>weighted_score</td>
+</tr>
+<tr>
+<td>AuthorDiversityScorer</td>
+<td>score (调整后)</td>
+</tr>
+<tr>
+<td>VFHydrator</td>
+<td>visibility_reason</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5">5. 请求生命周期完整追踪</h3>
+<pre><code>T=0ms    客户端发起 GetScoredPosts RPC
+         │
+T=1ms    ├── Query Hydration（并行 ~50ms）
+         │   ├── UAS 服务 → user_action_sequence
+         │   └── Strato → user_features (following list)
+         │
+T=50ms   ├── Candidate Sources（并行 ~30ms）
+         │   ├── Thunder gRPC → 80 条 In-Network
+         │   └── Phoenix Retrieval → 300 条 Out-of-Network
+         │
+T=80ms   ├── Hydration（并行 ~40ms）
+         │   ├── CoreData → 帖子元数据
+         │   ├── Gizmoduck → 作者信息
+         │   ├── InNetwork → 标记
+         │   ├── Subscription → 付费状态
+         │   └── VideoDuration → 视频时长
+         │
+T=120ms  ├── Filtering（顺序 ~10ms）
+         │   380 → 250 条
+         │
+T=130ms  ├── Scoring（顺序 ~100ms）
+         │   ├── PhoenixScorer (~80ms，主要延迟)
+         │   ├── WeightedScorer (~1ms)
+         │   ├── AuthorDiversityScorer (~1ms)
+         │   └── OONScorer (~1ms)
+         │
+T=230ms  ├── Selection: Top-50
+         │
+T=231ms  ├── Post-Selection（~20ms）
+         │   ├── VF Hydration + Filter
+         │   └── DedupConversation
+         │   50 → ~45 条
+         │
+T=250ms  ├── Side Effects（异步，不阻塞）
+         │   └── CacheRequestInfo
+         │
+T=250ms  └── 返回 ScoredPostsResponse
+</code></pre>
+<p><strong>端到端延迟约 250ms</strong>，其中 PhoenixScorer 的 Transformer 推理是主要瓶颈（~80ms）。</p>
+<hr>
+<h2 id="_4">💡 本节小结</h2>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>一句话总结</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ScoredPostsService</td>
+<td>单一 gRPC 端点，封装整个推荐管道</td>
+</tr>
+<tr>
+<td>Pipeline 组装</td>
+<td>Builder 模式声明式挂载所有组件</td>
+</tr>
+<tr>
+<td>PostCandidate</td>
+<td>随管道推进逐步被各组件"充实"的数据结构</td>
+</tr>
+<tr>
+<td>端到端延迟</td>
+<td>~250ms，PhoenixScorer 是瓶颈</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="11">📝 习题集11</h2>
+<p><strong>代码阅读：</strong>
+1. 在 <code>phoenix_candidate_pipeline.rs</code> 中，Filter 的添加顺序为什么是这样的？如果把 <code>AgeFilter</code> 放在最后会怎样？
+2. <code>PostCandidate</code> 的哪些字段在 Source 阶段就有值？哪些是后续 Hydrator 填充的？</p>
+<p><strong>设计思考：</strong>
+3. 为什么 PhoenixScorer 是延迟瓶颈？有哪些可能的优化方案？
+4. Builder 模式相比直接在 <code>execute()</code> 里写所有逻辑有什么优势？</p>
+<hr>
+<blockquote>
+<p>下一课我们将深入 <strong>L12 - Query Hydration 与 Candidate Sources</strong>。</p>
+</blockquote></article><div class="nav-links"><a href="lesson-L10.html">← L10 Phoenix检索模型双塔架构</a><a href="lesson-L12.html">L12 QueryHydration与CandidateSources →</a></div></div>
+<footer><div class="container">x-algorithm 学习教程 · 基于 X (Twitter) For You Feed 开源算法</div></footer>
+</body></html>

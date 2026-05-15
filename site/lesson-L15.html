@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>L15 Selection与PostProcessing — x-algorithm 学习教程</title>
+<style>
+:root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+nav { background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 0; position: sticky; top: 0; z-index: 10; }
+nav .container { display: flex; gap: 2rem; align-items: center; }
+nav .logo { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+nav a { color: var(--muted); font-size: 0.9rem; }
+nav a:hover { color: var(--text); text-decoration: none; }
+.hero { text-align: center; padding: 4rem 0 3rem; }
+.hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+.phase { margin-bottom: 2.5rem; }
+.phase-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; padding-left: 0.5rem; border-left: 3px solid; }
+.lessons-grid { display: grid; gap: 0.75rem; }
+.lesson-card { background: var(--card); border-radius: 0.5rem; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s, box-shadow 0.15s; }
+.lesson-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-decoration: none; }
+.lesson-card .num { font-size: 0.85rem; font-weight: 700; color: var(--muted); min-width: 2.5rem; }
+.lesson-card .title { color: var(--text); }
+.section-title { font-size: 1.5rem; font-weight: 700; margin: 3rem 0 1.5rem; }
+article { background: var(--card); border-radius: 0.75rem; padding: 2.5rem; margin: 2rem 0 3rem; }
+article h1 { font-size: 1.75rem; margin-bottom: 1.5rem; }
+article h2 { font-size: 1.35rem; margin: 2rem 0 0.75rem; color: var(--accent); }
+article h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+article p { margin-bottom: 1rem; }
+article ul, article ol { margin: 0.5rem 0 1rem 1.5rem; }
+article li { margin-bottom: 0.35rem; }
+article code { background: #334155; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
+article pre { background: #0f172a; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+article pre code { background: transparent; padding: 0; }
+article blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--muted); margin: 1rem 0; }
+article table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+article th, article td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
+article th { background: #334155; }
+article strong { color: #f1f5f9; }
+.breadcrumb { color: var(--muted); margin: 1.5rem 0 0; font-size: 0.9rem; }
+.breadcrumb a { color: var(--muted); }
+.nav-links { display: flex; justify-content: space-between; margin: 2rem 0 3rem; }
+.nav-links a { background: var(--card); padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; }
+footer { border-top: 1px solid #334155; padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: auto; }
+</style>
+</head>
+<body>
+<nav><div class="container">
+<span class="logo">📘 x-algorithm 学习教程</span>
+<a href="index.html">首页</a>
+<a href="learn.html">课程</a>
+<a href="interview.html">面试</a>
+</div></nav>
+<div class="container"><div class="breadcrumb"><a href="index.html">首页</a> / <a href="learn.html">课程</a> / L15</div><article><h1 id="l15-selection-post-processing">L15 - Selection 与 Post-Processing</h1>
+<blockquote>
+<p><strong>"最后的 5% 工作决定了 50% 的用户体验——选择和后处理是推荐系统的收尾艺术。"</strong></p>
+</blockquote>
+<hr>
+<h2 id="_1">📌 本节目标</h2>
+<ol>
+<li>理解 TopKScoreSelector 的排序与截断</li>
+<li>掌握 VFFilter 安全可见性过滤</li>
+<li>了解 DedupConversationFilter 对话去重</li>
+<li>认识 CacheRequestInfoSideEffect 预测缓存</li>
+<li>理解 ScoredPostsResponse 最终响应构建</li>
+</ol>
+<hr>
+<h2 id="_2">📚 前置知识</h2>
+<ul>
+<li>L14 中的四级评分链路</li>
+<li>L05 中的 Selector/SideEffect trait</li>
+</ul>
+<hr>
+<h2 id="_3">正文讲解</h2>
+<h3 id="1-topkscoreselector">1. TopKScoreSelector——排序与截断</h3>
+<pre><code class="language-rust">pub struct TopKScoreSelector {
+    k: usize,  // 默认 50
+}
+
+#[async_trait]
+impl Selector&lt;ScoredPostsQuery, PostCandidate&gt; for TopKScoreSelector {
+    async fn select(&amp;self, _query: &amp;Q, mut candidates: Vec&lt;PostCandidate&gt;) 
+        -&gt; Vec&lt;PostCandidate&gt; 
+    {
+        // 按 score 降序排列
+        candidates.sort_by(|a, b| {
+            b.score.unwrap_or(f64::NEG_INFINITY)
+                .partial_cmp(&amp;a.score.unwrap_or(f64::NEG_INFINITY))
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+
+        // 截断到 Top-K
+        candidates.truncate(self.k);
+
+        candidates
+    }
+}
+</code></pre>
+<p><strong>从 250 条到 50 条</strong>——这一步丢弃了 80% 的候选，只留下分数最高的精华。</p>
+<blockquote>
+<p><strong>类比</strong>：这就像高考录取——不管你怎么报名（Source）、怎么答题（Score），最终只有 Top-K 被录取。</p>
+</blockquote>
+<h3 id="2-post-selection-hydrationvfcandidatehydrator">2. Post-Selection Hydration：VFCandidateHydrator</h3>
+<p>选择 Top-50 后，再做一轮数据补全——这次是<strong>安全相关</strong>的数据：</p>
+<pre><code class="language-rust">pub struct VFCandidateHydrator {
+    vf_client: Arc&lt;VisibilityFilterClient&gt;,
+}
+
+#[async_trait]
+impl Hydrator&lt;ScoredPostsQuery, PostCandidate&gt; for VFCandidateHydrator {
+    async fn hydrate(&amp;self, _query: &amp;Q, candidates: Vec&lt;PostCandidate&gt;) 
+        -&gt; Vec&lt;PostCandidate&gt; 
+    {
+        let tweet_ids: Vec&lt;i64&gt; = candidates.iter()
+            .map(|c| c.tweet_id)
+            .collect();
+
+        // 批量检查可见性
+        let visibility = self.vf_client
+            .check_visibility(&amp;tweet_ids)
+            .await;
+
+        candidates.into_iter()
+            .map(|mut c| {
+                c.visibility_reason = visibility
+                    .get(&amp;c.tweet_id)
+                    .and_then(|v| v.filtered_reason.clone());
+                c
+            })
+            .collect()
+    }
+}
+</code></pre>
+<p><strong>为什么 VF 检查放在 Post-Selection？</strong> 因为 VF 服务调用成本高（需要检查法律合规、内容安全等）。先选出 Top-50 再检查，比对 250 条都检查节省 80% 的 RPC 开销。</p>
+<h3 id="3-vffilter">3. VFFilter——安全底线</h3>
+<pre><code class="language-rust">pub struct VFFilter;
+
+impl Filter&lt;ScoredPostsQuery, PostCandidate&gt; for VFFilter {
+    async fn filter(&amp;self, _query: &amp;Q, candidates: Vec&lt;PostCandidate&gt;) 
+        -&gt; FilterResult&lt;PostCandidate&gt; 
+    {
+        candidates.into_iter()
+            .partition(|c| c.visibility_reason.is_none())
+    }
+}
+</code></pre>
+<p>被 VF 过滤的原因包括：</p>
+<table>
+<thead>
+<tr>
+<th>FilteredReason</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Deleted</code></td>
+<td>帖子已被删除</td>
+</tr>
+<tr>
+<td><code>BounceDeleted</code></td>
+<td>帖子被自动删除（违规）</td>
+</tr>
+<tr>
+<td><code>SpamFiltered</code></td>
+<td>垃圾信息</td>
+</tr>
+<tr>
+<td><code>SafetyFiltered</code></td>
+<td>安全内容审核不通过</td>
+</tr>
+<tr>
+<td><code>LegalDemand</code></td>
+<td>法律要求移除</td>
+</tr>
+<tr>
+<td><code>Interstitial</code></td>
+<td>需要警告提示</td>
+</tr>
+</tbody>
+</table>
+<h3 id="4-dedupconversationfilter">4. DedupConversationFilter——对话去重</h3>
+<pre><code class="language-rust">pub struct DedupConversationFilter;
+
+impl Filter&lt;ScoredPostsQuery, PostCandidate&gt; for DedupConversationFilter {
+    async fn filter(&amp;self, _query: &amp;Q, candidates: Vec&lt;PostCandidate&gt;) 
+        -&gt; FilterResult&lt;PostCandidate&gt; 
+    {
+        let mut seen_conversations: HashSet&lt;u64&gt; = HashSet::new();
+
+        candidates.into_iter()
+            .partition(|c| {
+                // 对话根 ID = 最早的祖先帖子 ID（如果有的话）
+                let conversation_root = c.ancestors
+                    .first()
+                    .copied()
+                    .or(c.in_reply_to_tweet_id)
+                    .unwrap_or(c.tweet_id as u64);
+
+                seen_conversations.insert(conversation_root)
+            })
+    }
+}
+</code></pre>
+<blockquote>
+<p><strong>场景</strong>：一条热门帖子下面有 3 条高分回复都进了 Top-50。没有去重的话，信息流前 4 条可能全是同一个话题。DedupConversationFilter 保证每个对话最多出现一条。</p>
+</blockquote>
+<h3 id="5-cacherequestinfosideeffect">5. CacheRequestInfoSideEffect——预测缓存</h3>
+<pre><code class="language-rust">pub struct CacheRequestInfoSideEffect {
+    cache_client: Arc&lt;PredictionCacheClient&gt;,
+}
+
+#[async_trait]
+impl SideEffect&lt;ScoredPostsQuery, PostCandidate&gt; 
+    for CacheRequestInfoSideEffect 
+{
+    async fn apply(&amp;self, query: &amp;Q, candidates: &amp;[PostCandidate]) {
+        // 记录预测结果供后续分析
+        let cache_entries: Vec&lt;CacheEntry&gt; = candidates.iter()
+            .filter_map(|c| {
+                Some(CacheEntry {
+                    viewer_id: query.viewer_id,
+                    tweet_id: c.tweet_id,
+                    prediction_request_id: c.prediction_request_id?,
+                    phoenix_scores: c.phoenix_scores.clone(),
+                    weighted_score: c.weighted_score?,
+                    final_score: c.score?,
+                    in_network: c.in_network?,
+                    served_at_ms: now_ms(),
+                })
+            })
+            .collect();
+
+        // Fire-and-forget：不等待结果
+        let _ = self.cache_client.put_batch(cache_entries).await;
+    }
+}
+</code></pre>
+<p><strong>缓存的用途：</strong>
+1. <strong>模型评估</strong>：对比预测值与实际行为，计算模型准确率
+2. <strong>A/B 测试</strong>：比较不同权重配置的效果
+3. <strong>调试</strong>：排查"为什么某条帖子被推荐/未被推荐"
+4. <strong>重训练</strong>：作为监督信号反馈给模型</p>
+<h3 id="6-scoredpostsresponse">6. ScoredPostsResponse——最终响应</h3>
+<pre><code class="language-rust">pub struct ScoredPostsResponse {
+    pub scored_posts: Vec&lt;ScoredPost&gt;,
+}
+
+pub struct ScoredPost {
+    pub tweet_id: i64,
+    pub author_id: u64,
+    pub retweeted_tweet_id: Option&lt;u64&gt;,
+    pub score: f64,
+    pub in_network: bool,
+    pub served_type: ServedType,  // ForYouPhoenixRetrieval | ForYouInNetwork
+    pub screen_names: HashMap&lt;u64, String&gt;,
+    pub visibility_reason: Option&lt;FilteredReason&gt;,
+}
+</code></pre>
+<p><strong>构建响应的过程：</strong></p>
+<pre><code class="language-rust">fn build_response(result: PipelineResult&lt;ScoredPostsQuery, PostCandidate&gt;) 
+    -&gt; ScoredPostsResponse 
+{
+    let scored_posts = result.selected_candidates
+        .into_iter()
+        .map(|c| {
+            let mut screen_names = HashMap::new();
+            if let Some(name) = &amp;c.author_screen_name {
+                screen_names.insert(c.author_id, name.clone());
+            }
+            if let (Some(rt_id), Some(rt_name)) = 
+                (c.retweeted_user_id, &amp;c.retweeted_screen_name) 
+            {
+                screen_names.insert(rt_id, rt_name.clone());
+            }
+
+            ScoredPost {
+                tweet_id: c.tweet_id,
+                author_id: c.author_id,
+                retweeted_tweet_id: c.retweeted_tweet_id.map(|id| id as i64),
+                score: c.score.unwrap_or(0.0),
+                in_network: c.in_network.unwrap_or(false),
+                served_type: if c.in_network == Some(true) {
+                    ServedType::ForYouInNetwork
+                } else {
+                    ServedType::ForYouPhoenixRetrieval
+                },
+                screen_names,
+                visibility_reason: c.visibility_reason,
+            }
+        })
+        .collect();
+
+    ScoredPostsResponse { scored_posts }
+}
+</code></pre>
+<hr>
+<h2 id="_4">💡 本节小结</h2>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>输入 → 输出</th>
+<th>核心作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TopKSelector</td>
+<td>250条 → 50条</td>
+<td>按分数截断</td>
+</tr>
+<tr>
+<td>VFHydrator + VFFilter</td>
+<td>50条 → ~48条</td>
+<td>安全合规过滤</td>
+</tr>
+<tr>
+<td>DedupConversation</td>
+<td>~48条 → ~45条</td>
+<td>对话去重</td>
+</tr>
+<tr>
+<td>CacheRequestInfo</td>
+<td>不改变结果</td>
+<td>记录预测供分析</td>
+</tr>
+<tr>
+<td>Response 构建</td>
+<td>PostCandidate → ScoredPost</td>
+<td>裁剪字段，返回客户端</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="15">📝 习题集15</h2>
+<p><strong>概念理解：</strong>
+1. 为什么 VF 检查放在 Post-Selection 而不是 Pre-Selection？如果有一条违规帖子分数很高，它会怎样被处理？
+2. CacheRequestInfoSideEffect 为什么是"fire-and-forget"？如果缓存写入失败，会影响推荐结果吗？</p>
+<p><strong>设计思考：</strong>
+3. DedupConversationFilter 只保留每个对话的第一条（按 Top-K 排序后的第一条，即分数最高的）。这个策略有什么潜在问题？
+4. 如果用户快速下滑，在 1 秒内请求了 3 次 GetScoredPosts，served_ids 如何防止重复？</p>
+<p><strong>综合题：</strong>
+5. 画出从 Source 产生 380 条候选到最终返回 45 条的完整漏斗图，标注每个阶段的数量变化和所用组件。</p>
+<hr>
+<blockquote>
+<p>下一课我们将进入第四部分——<strong>L16 - 系统设计深度分析</strong>，从更高的维度审视整个系统。</p>
+</blockquote></article><div class="nav-links"><a href="lesson-L14.html">← L14 Scoring全链路</a><a href="lesson-L16.html">L16 系统设计深度分析 →</a></div></div>
+<footer><div class="container">x-algorithm 学习教程 · 基于 X (Twitter) For You Feed 开源算法</div></footer>
+</body></html>

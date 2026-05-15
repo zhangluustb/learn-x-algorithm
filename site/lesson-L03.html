@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>L03 Rust与Python技术栈快速上手 — x-algorithm 学习教程</title>
+<style>
+:root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+nav { background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 0; position: sticky; top: 0; z-index: 10; }
+nav .container { display: flex; gap: 2rem; align-items: center; }
+nav .logo { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+nav a { color: var(--muted); font-size: 0.9rem; }
+nav a:hover { color: var(--text); text-decoration: none; }
+.hero { text-align: center; padding: 4rem 0 3rem; }
+.hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+.phase { margin-bottom: 2.5rem; }
+.phase-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; padding-left: 0.5rem; border-left: 3px solid; }
+.lessons-grid { display: grid; gap: 0.75rem; }
+.lesson-card { background: var(--card); border-radius: 0.5rem; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s, box-shadow 0.15s; }
+.lesson-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-decoration: none; }
+.lesson-card .num { font-size: 0.85rem; font-weight: 700; color: var(--muted); min-width: 2.5rem; }
+.lesson-card .title { color: var(--text); }
+.section-title { font-size: 1.5rem; font-weight: 700; margin: 3rem 0 1.5rem; }
+article { background: var(--card); border-radius: 0.75rem; padding: 2.5rem; margin: 2rem 0 3rem; }
+article h1 { font-size: 1.75rem; margin-bottom: 1.5rem; }
+article h2 { font-size: 1.35rem; margin: 2rem 0 0.75rem; color: var(--accent); }
+article h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+article p { margin-bottom: 1rem; }
+article ul, article ol { margin: 0.5rem 0 1rem 1.5rem; }
+article li { margin-bottom: 0.35rem; }
+article code { background: #334155; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
+article pre { background: #0f172a; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+article pre code { background: transparent; padding: 0; }
+article blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--muted); margin: 1rem 0; }
+article table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+article th, article td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
+article th { background: #334155; }
+article strong { color: #f1f5f9; }
+.breadcrumb { color: var(--muted); margin: 1.5rem 0 0; font-size: 0.9rem; }
+.breadcrumb a { color: var(--muted); }
+.nav-links { display: flex; justify-content: space-between; margin: 2rem 0 3rem; }
+.nav-links a { background: var(--card); padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; }
+footer { border-top: 1px solid #334155; padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: auto; }
+</style>
+</head>
+<body>
+<nav><div class="container">
+<span class="logo">📘 x-algorithm 学习教程</span>
+<a href="index.html">首页</a>
+<a href="learn.html">课程</a>
+<a href="interview.html">面试</a>
+</div></nav>
+<div class="container"><div class="breadcrumb"><a href="index.html">首页</a> / <a href="learn.html">课程</a> / L03</div><article><h1 id="l03-rust-python">L03 - Rust &amp; Python 技术栈快速上手</h1>
+<blockquote>
+<p><strong>"工欲善其事，必先利其器——读懂 x-algorithm 需要两把钥匙：Rust 和 JAX。"</strong></p>
+</blockquote>
+<hr>
+<h2 id="_1">📌 本节目标</h2>
+<ol>
+<li>掌握 Rust trait 系统与异步编程的核心概念</li>
+<li>了解 Python JAX/Haiku 框架的基本用法</li>
+<li>理解 gRPC 服务通信的工作方式</li>
+<li>认识 Kafka 消息队列在系统中的角色</li>
+</ol>
+<hr>
+<h2 id="_2">📚 前置知识</h2>
+<ul>
+<li>任意一门编程语言的基础（变量、函数、控制流）</li>
+<li>不需要 Rust 或 JAX 经验（我们从零讲起关键概念）</li>
+</ul>
+<hr>
+<h2 id="_3">正文讲解</h2>
+<h3 id="1-rust-trait-x-algorithm">1. Rust Trait 系统——x-algorithm 的骨架</h3>
+<blockquote>
+<p><strong>类比</strong>：Trait 就像"职业资格证"。一个类型实现了 <code>Filter</code> trait，就像一个人考了"过滤师"证书——系统知道它能执行过滤操作，但不关心它具体怎么过滤。</p>
+</blockquote>
+<p>在 x-algorithm 的 <code>candidate-pipeline</code> 中，整个管道框架都建立在 trait 之上：</p>
+<pre><code class="language-rust">// 定义 trait：规定&quot;能做什么&quot;
+#[async_trait]
+pub trait Filter&lt;Q, C&gt;: Send + Sync {
+    fn name(&amp;self) -&gt; &amp;str;
+    fn enable(&amp;self, query: &amp;Q) -&gt; bool { true }
+    async fn filter(&amp;self, query: &amp;Q, candidates: Vec&lt;C&gt;) 
+        -&gt; FilterResult&lt;C&gt;;
+}
+
+// 实现 trait：规定&quot;具体怎么做&quot;
+pub struct AgeFilter { max_age_seconds: u64 }
+
+#[async_trait]
+impl Filter&lt;ScoredPostsQuery, PostCandidate&gt; for AgeFilter {
+    fn name(&amp;self) -&gt; &amp;str { &quot;AgeFilter&quot; }
+    async fn filter(&amp;self, query: &amp;_, candidates: Vec&lt;_&gt;) 
+        -&gt; FilterResult&lt;_&gt; {
+        // 移除超过 max_age_seconds 的帖子
+    }
+}
+</code></pre>
+<p><strong>x-algorithm 中的六大 Trait：</strong></p>
+<table>
+<thead>
+<tr>
+<th>Trait</th>
+<th>输入</th>
+<th>输出</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Source&lt;Q,C&gt;</code></td>
+<td>Query</td>
+<td>Vec\&lt;Candidate&gt;</td>
+<td>生成候选</td>
+</tr>
+<tr>
+<td><code>Hydrator&lt;Q,C&gt;</code></td>
+<td>Query + Candidates</td>
+<td>enriched Candidates</td>
+<td>补全数据</td>
+</tr>
+<tr>
+<td><code>Filter&lt;Q,C&gt;</code></td>
+<td>Query + Candidates</td>
+<td>keep / remove 分区</td>
+<td>过滤</td>
+</tr>
+<tr>
+<td><code>Scorer&lt;Q,C&gt;</code></td>
+<td>Query + Candidates</td>
+<td>scored Candidates</td>
+<td>打分</td>
+</tr>
+<tr>
+<td><code>Selector&lt;Q,C&gt;</code></td>
+<td>Query + Candidates</td>
+<td>top-K Candidates</td>
+<td>选择</td>
+</tr>
+<tr>
+<td><code>SideEffect&lt;Q,C&gt;</code></td>
+<td>Query + Candidates</td>
+<td>()</td>
+<td>副作用</td>
+</tr>
+</tbody>
+</table>
+<h4 id="12">1.2 异步编程基础</h4>
+<p>Rust 的 <code>async/await</code> 让 I/O 密集型操作不阻塞线程：</p>
+<pre><code class="language-rust">// 同步：线程等待网络响应
+let posts = thunder_client.get_posts(user_id);  // 阻塞
+
+// 异步：线程可以去做别的事
+let posts = thunder_client.get_posts(user_id).await;  // 不阻塞
+</code></pre>
+<p>x-algorithm 大量使用异步操作：gRPC 调用、Kafka 消费、并行数据获取都是 async 的。</p>
+<h4 id="13-rust">1.3 常用 Rust 类型</h4>
+<pre><code class="language-rust">Arc&lt;T&gt;          // 线程安全的引用计数智能指针
+DashMap&lt;K, V&gt;   // 并发安全的 HashMap（Thunder 用来存帖子）
+VecDeque&lt;T&gt;     // 双端队列（帖子按时间排列）
+Box&lt;dyn Trait&gt;  // Trait 对象，运行时多态
+Option&lt;T&gt;       // 可能有值也可能没有（替代 null）
+</code></pre>
+<h3 id="2-python-jaxhaikuphoenix">2. Python JAX/Haiku——Phoenix 的基石</h3>
+<blockquote>
+<p><strong>类比</strong>：如果 PyTorch 是"自动挡汽车"，JAX 就是"手动挡跑车"——更底层、更快、更可控，但需要对底层原理有更好的理解。</p>
+</blockquote>
+<h4 id="21-jax">2.1 JAX 核心概念</h4>
+<pre><code class="language-python">import jax
+import jax.numpy as jnp
+
+# JAX 数组（不可变！）
+x = jnp.array([1.0, 2.0, 3.0])
+
+# 自动微分
+grad_fn = jax.grad(lambda x: jnp.sum(x ** 2))
+gradients = grad_fn(x)  # [2.0, 4.0, 6.0]
+
+# JIT 编译加速
+@jax.jit
+def fast_matmul(a, b):
+    return a @ b
+
+# 批量化
+batched_fn = jax.vmap(single_example_fn)
+</code></pre>
+<p><strong>JAX 三大利器：</strong></p>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>API</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>自动微分</td>
+<td><code>jax.grad</code></td>
+<td>计算梯度（训练）</td>
+</tr>
+<tr>
+<td>JIT 编译</td>
+<td><code>jax.jit</code></td>
+<td>编译为 XLA 高性能代码</td>
+</tr>
+<tr>
+<td>批量化</td>
+<td><code>jax.vmap</code></td>
+<td>单样本函数自动变批量</td>
+</tr>
+</tbody>
+</table>
+<h4 id="22-haikudeepmind">2.2 Haiku：DeepMind 的神经网络库</h4>
+<p>Haiku 是 JAX 上的神经网络构建工具，风格类似 Sonnet：</p>
+<pre><code class="language-python">import haiku as hk
+
+class MyLinear(hk.Module):
+    def __init__(self, output_size, name=None):
+        super().__init__(name=name)
+        self.output_size = output_size
+
+    def __call__(self, x):
+        # hk.get_parameter 自动管理参数
+        w = hk.get_parameter(&quot;w&quot;, 
+            shape=[x.shape[-1], self.output_size],
+            init=hk.initializers.RandomNormal())
+        return x @ w
+
+# 转换为纯函数（JAX 要求）
+def forward(x):
+    return MyLinear(64)(x)
+
+model = hk.transform(forward)
+params = model.init(rng_key, sample_input)
+output = model.apply(params, rng_key, real_input)
+</code></pre>
+<p>在 Phoenix 的 <code>grok.py</code> 中，所有组件都是 <code>hk.Module</code> 的子类：</p>
+<pre><code class="language-python">class RMSNorm(hk.Module): ...
+class Linear(hk.Module): ...
+class RotaryEmbedding(hk.Module): ...
+class MultiHeadAttention(hk.Module): ...
+class DecoderLayer(hk.Module): ...
+class Transformer(hk.Module): ...
+</code></pre>
+<h3 id="3-grpc">3. gRPC 服务通信</h3>
+<blockquote>
+<p><strong>类比</strong>：gRPC 就像一份"合同模板"——服务端和客户端都签了同一份合同（.proto 文件），双方都知道该发什么格式的数据、期望收到什么格式的回复。</p>
+</blockquote>
+<p>x-algorithm 中的 gRPC 服务：</p>
+<table>
+<thead>
+<tr>
+<th>服务</th>
+<th>端点</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Thunder</strong></td>
+<td><code>GetInNetworkPosts</code></td>
+<td>获取关注用户的帖子</td>
+</tr>
+<tr>
+<td><strong>Home Mixer</strong></td>
+<td><code>GetScoredPosts</code></td>
+<td>获取排好序的信息流</td>
+</tr>
+<tr>
+<td><strong>Phoenix</strong></td>
+<td>模型推理 API</td>
+<td>检索/排序预测</td>
+</tr>
+</tbody>
+</table>
+<pre><code>客户端（Home Mixer）                   服务端（Thunder）
+    │                                      │
+    │──── GetInNetworkPosts(user_id) ─────►│
+    │     [Protobuf 序列化, Zstd 压缩]      │
+    │                                      │── 查询 PostStore
+    │◄──── Vec&lt;LightPost&gt; ────────────────│
+    │     [Protobuf 反序列化]               │
+</code></pre>
+<p><strong>gRPC 的优势：</strong>
+- 基于 HTTP/2，支持多路复用
+- Protobuf 序列化比 JSON 小 3-10 倍
+- 强类型，编译时检查接口一致性
+- 支持流式传输</p>
+<h3 id="4-kafka">4. Kafka 消息队列</h3>
+<blockquote>
+<p><strong>类比</strong>：Kafka 就像一个"公告栏"——发帖的人把消息钉上去，看板的人随时来取。消息不会因为取了就消失，可以反复读取。</p>
+</blockquote>
+<p>在 Thunder 中，Kafka 负责实时推送帖子事件：</p>
+<pre><code>帖子服务 ──► Kafka Topic ──► Thunder Consumer
+                │
+                ├── 创建帖子事件 → insert_posts()
+                └── 删除帖子事件 → mark_as_deleted()
+</code></pre>
+<p><strong>关键概念：</strong></p>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Topic</td>
+<td>消息分类（如 "tweet-events"）</td>
+</tr>
+<tr>
+<td>Partition</td>
+<td>Topic 内的并行分片</td>
+</tr>
+<tr>
+<td>Consumer Group</td>
+<td>多个消费者协同处理</td>
+</tr>
+<tr>
+<td>Offset</td>
+<td>消费位置指针</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="_4">💡 本节小结</h2>
+<table>
+<thead>
+<tr>
+<th>技术</th>
+<th>x-algorithm 中的角色</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rust Trait</td>
+<td>定义管道框架的六大抽象（Source/Filter/Scorer...）</td>
+</tr>
+<tr>
+<td>async/await</td>
+<td>所有网络 I/O 和并行操作的基础</td>
+</tr>
+<tr>
+<td>JAX/Haiku</td>
+<td>Phoenix ML 模型的实现框架</td>
+</tr>
+<tr>
+<td>gRPC</td>
+<td>模块间高效通信</td>
+</tr>
+<tr>
+<td>Kafka</td>
+<td>Thunder 实时接收帖子事件流</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="3">📝 习题集3</h2>
+<p><strong>概念理解：</strong>
+1. Rust 的 <code>Box&lt;dyn Filter&gt;</code> 和泛型 <code>T: Filter</code> 有什么区别？x-algorithm 为什么选择 trait 对象？
+2. JAX 的 <code>jax.jit</code> 做了什么？为什么能加速计算？</p>
+<p><strong>代码实践：</strong>
+3. 用 Rust 写一个简单的 <code>Filter</code> trait 实现，过滤掉长度超过 280 字符的帖子。
+4. 用 JAX/Haiku 实现一个简单的两层 MLP。</p>
+<p><strong>设计思考：</strong>
+5. x-algorithm 为什么选择 gRPC 而不是 REST API 进行模块间通信？
+6. 如果 Kafka 发生延迟，Thunder 中的帖子会出现什么问题？如何应对？</p>
+<hr>
+<blockquote>
+<p>下一课我们将学习 <strong>L04 - x-algorithm 项目导览</strong>，深入源码目录结构和数据流。</p>
+</blockquote></article><div class="nav-links"><a href="lesson-L02.html">← L02 Transformer基础与注意力机制</a><a href="lesson-L04.html">L04 x-algorithm项目导览 →</a></div></div>
+<footer><div class="container">x-algorithm 学习教程 · 基于 X (Twitter) For You Feed 开源算法</div></footer>
+</body></html>

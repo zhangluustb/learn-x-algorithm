@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>x-algorithm专属面试50题 — x-algorithm 学习教程</title>
+<style>
+:root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+nav { background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 0; position: sticky; top: 0; z-index: 10; }
+nav .container { display: flex; gap: 2rem; align-items: center; }
+nav .logo { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+nav a { color: var(--muted); font-size: 0.9rem; }
+nav a:hover { color: var(--text); text-decoration: none; }
+.hero { text-align: center; padding: 4rem 0 3rem; }
+.hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+.phase { margin-bottom: 2.5rem; }
+.phase-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; padding-left: 0.5rem; border-left: 3px solid; }
+.lessons-grid { display: grid; gap: 0.75rem; }
+.lesson-card { background: var(--card); border-radius: 0.5rem; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s, box-shadow 0.15s; }
+.lesson-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-decoration: none; }
+.lesson-card .num { font-size: 0.85rem; font-weight: 700; color: var(--muted); min-width: 2.5rem; }
+.lesson-card .title { color: var(--text); }
+.section-title { font-size: 1.5rem; font-weight: 700; margin: 3rem 0 1.5rem; }
+article { background: var(--card); border-radius: 0.75rem; padding: 2.5rem; margin: 2rem 0 3rem; }
+article h1 { font-size: 1.75rem; margin-bottom: 1.5rem; }
+article h2 { font-size: 1.35rem; margin: 2rem 0 0.75rem; color: var(--accent); }
+article h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+article p { margin-bottom: 1rem; }
+article ul, article ol { margin: 0.5rem 0 1rem 1.5rem; }
+article li { margin-bottom: 0.35rem; }
+article code { background: #334155; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
+article pre { background: #0f172a; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+article pre code { background: transparent; padding: 0; }
+article blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--muted); margin: 1rem 0; }
+article table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+article th, article td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
+article th { background: #334155; }
+article strong { color: #f1f5f9; }
+.breadcrumb { color: var(--muted); margin: 1.5rem 0 0; font-size: 0.9rem; }
+.breadcrumb a { color: var(--muted); }
+.nav-links { display: flex; justify-content: space-between; margin: 2rem 0 3rem; }
+.nav-links a { background: var(--card); padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; }
+footer { border-top: 1px solid #334155; padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: auto; }
+</style>
+</head>
+<body>
+<nav><div class="container">
+<span class="logo">📘 x-algorithm 学习教程</span>
+<a href="index.html">首页</a>
+<a href="learn.html">课程</a>
+<a href="interview.html">面试</a>
+</div></nav>
+<div class="container"><div class="breadcrumb"><a href="index.html">首页</a> / <a href="interview.html">面试</a> / x-algorithm专属面试50题</div><article><h1 id="10-x-algorithm-50">10 - x-algorithm 专属面试 50 题</h1>
+<blockquote>
+<p>专门针对 x-algorithm 项目的深度面试题，覆盖所有模块和设计决策。</p>
+</blockquote>
+<hr>
+<h2 id="q1-q10">架构总览（Q1-Q10）</h2>
+<p><strong>Q1:</strong> 画出 x-algorithm 的完整架构图，标注四大模块的通信方式。⭐⭐
+<strong>Q2:</strong> 为什么 x-algorithm 不用单体架构而用微服务？⭐⭐
+<strong>Q3:</strong> Home Mixer、Thunder、Phoenix 各用什么语言？为什么选择不同语言？⭐⭐
+<strong>Q4:</strong> 一次 For You 请求的端到端数据流？⭐⭐⭐
+<strong>Q5:</strong> Candidate Pipeline 框架的六大 Trait 分别是什么？⭐⭐
+<strong>Q6:</strong> 为什么 Source 并行而 Filter 顺序？⭐⭐
+<strong>Q7:</strong> PipelineResult 包含哪些字段？⭐
+<strong>Q8:</strong> Pipeline 的错误处理策略？⭐⭐
+<strong>Q9:</strong> 如何新增一个候选源（如广告）？需要改几行代码？⭐⭐
+<strong>Q10:</strong> Builder 模式在管道组装中的优势？⭐</p>
+<h2 id="thunder-q11-q20">Thunder 模块（Q11-Q20）</h2>
+<p><strong>Q11:</strong> PostStore 的数据结构设计？为什么用三个 DashMap？⭐⭐
+<strong>Q12:</strong> TinyPost vs LightPost 的区别？为什么需要两种？⭐⭐
+<strong>Q13:</strong> VecDeque 在帖子存储中的作用？⭐
+<strong>Q14:</strong> Kafka 事件的消费和反序列化流程？⭐⭐
+<strong>Q15:</strong> TTL 的懒过期和主动裁剪如何配合？⭐⭐
+<strong>Q16:</strong> Semaphore 的 permits 数如何确定？⭐⭐
+<strong>Q17:</strong> Thunder 的 gRPC 服务暴露了什么接口？⭐
+<strong>Q18:</strong> get_posts_by_users 的实现逻辑？⭐⭐
+<strong>Q19:</strong> 如果一个用户关注了 10 万人，Thunder 查询会怎样？⭐⭐
+<strong>Q20:</strong> Thunder 的监控指标有哪些？⭐⭐</p>
+<h2 id="phoenix-q21-q35">Phoenix 模型（Q21-Q35）</h2>
+<p><strong>Q21:</strong> TransformerConfig 的关键参数和它们的关系？⭐⭐
+<strong>Q22:</strong> Grok-1 适配推荐系统做了哪些改动？⭐⭐⭐
+<strong>Q23:</strong> HashConfig 的设计考量？⭐⭐
+<strong>Q24:</strong> 三层 Embedding Reduction 的完整流程？⭐⭐⭐
+<strong>Q25:</strong> Candidate Isolation 掩码的构建方法和数学证明？⭐⭐⭐
+<strong>Q26:</strong> PhoenixModel 的前向传播 6 个步骤？⭐⭐
+<strong>Q27:</strong> 19 种行为预测的具体列表和分类？⭐⭐
+<strong>Q28:</strong> WeightedScorer 的权重设计原则？⭐⭐⭐
+<strong>Q29:</strong> 负面行为权重为什么是 -74？改为 -10 会怎样？⭐⭐
+<strong>Q30:</strong> PhoenixRetrievalModel 和 PhoenixModel 的区别？⭐⭐
+<strong>Q31:</strong> CandidateTower 为什么要 L2 归一化？⭐⭐
+<strong>Q32:</strong> User Tower 为什么取最后一个位置作为表示？⭐⭐
+<strong>Q33:</strong> bfloat16 混合精度的实现细节？⭐⭐
+<strong>Q34:</strong> RecsysBatch 包含哪些字段？为什么用 NamedTuple？⭐
+<strong>Q35:</strong> runners.py 的 Haiku transform 流程？⭐⭐</p>
+<h2 id="home-mixer-q36-q45">Home Mixer 编排（Q36-Q45）</h2>
+<p><strong>Q36:</strong> Query Hydration 阶段获取了什么数据？⭐⭐
+<strong>Q37:</strong> ThunderSource 和 PhoenixSource 的实现和区别？⭐⭐
+<strong>Q38:</strong> 五大 Hydrator 各自补全什么字段？⭐⭐
+<strong>Q39:</strong> 十大 Filter 的顺序为什么这样排列？⭐⭐⭐
+<strong>Q40:</strong> RetweetDeduplicationFilter 的去重逻辑？⭐⭐
+<strong>Q41:</strong> PhoenixScorer 是如何调用 Transformer 模型的？⭐⭐
+<strong>Q42:</strong> AuthorDiversityScorer 的 1/N 衰减原理？⭐⭐
+<strong>Q43:</strong> VFFilter 为什么放在 Post-Selection？⭐⭐
+<strong>Q44:</strong> DedupConversationFilter 的对话根 ID 如何确定？⭐⭐
+<strong>Q45:</strong> ScoredPostsResponse 包含哪些字段？⭐</p>
+<h2 id="q46-q50">设计决策与优化（Q46-Q50）</h2>
+<p><strong>Q46:</strong> 零手工特征的优缺点？在哪些场景下会失效？⭐⭐⭐
+<strong>Q47:</strong> Hash 嵌入从 512GB 降到 3GB，质量损失多少？如何验证？⭐⭐⭐
+<strong>Q48:</strong> 可组合管道架构如何支持 A/B 测试？⭐⭐
+<strong>Q49:</strong> 如果要增加"Grok 对话推荐"作为新 Source，需要改什么？⭐⭐
+<strong>Q50:</strong> 对比 x-algorithm 和 Twitter 2023 开源的推荐算法，主要区别是什么？⭐⭐⭐</p></article><div class="nav-links"><a href="interview-09.html">← Rust并发与系统工程面试30题</a></div></div>
+<footer><div class="container">x-algorithm 学习教程 · 基于 X (Twitter) For You Feed 开源算法</div></footer>
+</body></html>

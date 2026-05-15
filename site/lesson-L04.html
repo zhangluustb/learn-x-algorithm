@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>L04 x-algorithm项目导览 — x-algorithm 学习教程</title>
+<style>
+:root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+nav { background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 0; position: sticky; top: 0; z-index: 10; }
+nav .container { display: flex; gap: 2rem; align-items: center; }
+nav .logo { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+nav a { color: var(--muted); font-size: 0.9rem; }
+nav a:hover { color: var(--text); text-decoration: none; }
+.hero { text-align: center; padding: 4rem 0 3rem; }
+.hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+.phase { margin-bottom: 2.5rem; }
+.phase-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; padding-left: 0.5rem; border-left: 3px solid; }
+.lessons-grid { display: grid; gap: 0.75rem; }
+.lesson-card { background: var(--card); border-radius: 0.5rem; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s, box-shadow 0.15s; }
+.lesson-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-decoration: none; }
+.lesson-card .num { font-size: 0.85rem; font-weight: 700; color: var(--muted); min-width: 2.5rem; }
+.lesson-card .title { color: var(--text); }
+.section-title { font-size: 1.5rem; font-weight: 700; margin: 3rem 0 1.5rem; }
+article { background: var(--card); border-radius: 0.75rem; padding: 2.5rem; margin: 2rem 0 3rem; }
+article h1 { font-size: 1.75rem; margin-bottom: 1.5rem; }
+article h2 { font-size: 1.35rem; margin: 2rem 0 0.75rem; color: var(--accent); }
+article h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+article p { margin-bottom: 1rem; }
+article ul, article ol { margin: 0.5rem 0 1rem 1.5rem; }
+article li { margin-bottom: 0.35rem; }
+article code { background: #334155; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
+article pre { background: #0f172a; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+article pre code { background: transparent; padding: 0; }
+article blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--muted); margin: 1rem 0; }
+article table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+article th, article td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
+article th { background: #334155; }
+article strong { color: #f1f5f9; }
+.breadcrumb { color: var(--muted); margin: 1.5rem 0 0; font-size: 0.9rem; }
+.breadcrumb a { color: var(--muted); }
+.nav-links { display: flex; justify-content: space-between; margin: 2rem 0 3rem; }
+.nav-links a { background: var(--card); padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; }
+footer { border-top: 1px solid #334155; padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: auto; }
+</style>
+</head>
+<body>
+<nav><div class="container">
+<span class="logo">📘 x-algorithm 学习教程</span>
+<a href="index.html">首页</a>
+<a href="learn.html">课程</a>
+<a href="interview.html">面试</a>
+</div></nav>
+<div class="container"><div class="breadcrumb"><a href="index.html">首页</a> / <a href="learn.html">课程</a> / L04</div><article><h1 id="l04-x-algorithm">L04 - x-algorithm 项目导览</h1>
+<blockquote>
+<p><strong>"磨刀不误砍柴工——在深入每个模块之前，先建立对项目全貌的清晰认知。"</strong></p>
+</blockquote>
+<hr>
+<h2 id="_1">📌 本节目标</h2>
+<ol>
+<li>掌握仓库目录结构与文件布局</li>
+<li>理解四大模块的依赖关系</li>
+<li>完成环境搭建与 Demo 运行</li>
+<li>追踪一次完整请求的数据流</li>
+</ol>
+<hr>
+<h2 id="_2">📚 前置知识</h2>
+<ul>
+<li>L01-L03 的内容</li>
+<li>Git 基本操作</li>
+</ul>
+<hr>
+<h2 id="_3">正文讲解</h2>
+<h3 id="1">1. 仓库目录结构解读</h3>
+<pre><code>x-algorithm/
+├── README.md                  # 项目总览与架构说明
+├── LICENSE                    # Apache 2.0
+├── CODE_OF_CONDUCT.md
+│
+├── candidate-pipeline/        # 🔧 通用管道框架（Rust）
+│   ├── lib.rs                 #   模块导出
+│   ├── candidate_pipeline.rs  #   核心执行引擎
+│   ├── source.rs              #   Source trait
+│   ├── hydrator.rs            #   Hydrator trait
+│   ├── filter.rs              #   Filter trait
+│   ├── scorer.rs              #   Scorer trait
+│   ├── selector.rs            #   Selector trait
+│   ├── side_effect.rs         #   SideEffect trait
+│   └── query_hydrator.rs      #   QueryHydrator trait
+│
+├── thunder/                   # ⚡ In-Network 帖子存储（Rust gRPC）
+│   ├── main.rs                #   服务启动
+│   ├── lib.rs
+│   ├── thunder_service.rs     #   gRPC 服务实现
+│   ├── posts/
+│   │   └── post_store.rs      #   内存帖子存储核心
+│   ├── kafka/                 #   Kafka 事件消费
+│   │   └── mod.rs
+│   ├── deserializer.rs        #   事件反序列化
+│   └── ...                    #   config, metrics 等
+│
+├── home-mixer/                # 🏠 编排层（Rust gRPC）
+│   ├── main.rs                #   服务启动
+│   ├── server.rs              #   ScoredPostsService
+│   ├── candidate_pipeline/    #   管道配置
+│   │   ├── phoenix_candidate_pipeline.rs  # 核心管道组装
+│   │   ├── candidate.rs       #   PostCandidate 结构
+│   │   ├── candidate_features.rs
+│   │   ├── query.rs           #   ScoredPostsQuery
+│   │   └── query_features.rs
+│   ├── sources/               #   候选来源
+│   │   ├── thunder_source.rs  #   In-Network
+│   │   └── phoenix_source.rs  #   Out-of-Network
+│   ├── candidate_hydrators/   #   5 个数据补全器
+│   ├── filters/               #   12 个过滤器
+│   ├── scorers/               #   4 个评分器
+│   ├── selectors/             #   Top-K 选择器
+│   ├── side_effects/          #   缓存副作用
+│   └── query_hydrators/       #   Query 数据补全
+│
+└── phoenix/                   # 🐦 ML 模型（Python/JAX）
+    ├── pyproject.toml         #   依赖：JAX, Haiku, NumPy
+    ├── README.md              #   详细模型文档
+    ├── grok.py                #   Transformer 核心架构
+    ├── recsys_model.py        #   排序模型
+    ├── recsys_retrieval_model.py  #   检索模型（双塔）
+    ├── runners.py             #   模型初始化与推理
+    ├── run_ranker.py          #   排序 Demo
+    ├── run_retrieval.py       #   检索 Demo
+    └── test_*.py              #   单元测试
+</code></pre>
+<h3 id="2">2. 四大模块关系图</h3>
+<pre><code>                    ┌──────────────────────┐
+                    │     Home Mixer       │
+                    │   (编排/gRPC 服务)    │
+                    └──────┬───────────────┘
+                           │
+              ┌────────────┼────────────────┐
+              │            │                │
+              ▼            ▼                ▼
+    ┌─────────────┐  ┌──────────┐   ┌───────────┐
+    │  Candidate  │  │ Thunder  │   │  Phoenix   │
+    │  Pipeline   │  │ (存储)   │   │  (ML模型)  │
+    │  (框架)     │  └──────────┘   └───────────┘
+    └─────────────┘
+</code></pre>
+<p><strong>依赖关系：</strong></p>
+<table>
+<thead>
+<tr>
+<th>调用方</th>
+<th>被调用方</th>
+<th>通信方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Home Mixer</td>
+<td>Candidate Pipeline</td>
+<td>Rust crate 依赖（编译时）</td>
+</tr>
+<tr>
+<td>Home Mixer</td>
+<td>Thunder</td>
+<td>gRPC</td>
+</tr>
+<tr>
+<td>Home Mixer</td>
+<td>Phoenix</td>
+<td>gRPC / 进程内调用</td>
+</tr>
+<tr>
+<td>Thunder</td>
+<td>Kafka</td>
+<td>消费者客户端</td>
+</tr>
+</tbody>
+</table>
+<p><strong>数据流方向：</strong>
+1. 用户请求 → Home Mixer
+2. Home Mixer 并行调用 Thunder + Phoenix Retrieval
+3. 候选合并 → 通过 Candidate Pipeline 框架执行过滤/评分
+4. Phoenix Scorer 调用 Phoenix Ranking 模型
+5. 最终排好序的帖子 → 用户</p>
+<h3 id="3">3. 环境搭建与首次运行</h3>
+<h4 id="31-python-phoenix">3.1 Python / Phoenix 环境</h4>
+<pre><code class="language-bash"># 克隆仓库
+git clone https://github.com/xai-org/x-algorithm
+cd x-algorithm/phoenix
+
+# 安装依赖（推荐用 uv）
+pip install -e .
+# 或
+uv sync
+
+# 运行排序 Demo
+python run_ranker.py
+
+# 运行检索 Demo  
+python run_retrieval.py
+</code></pre>
+<p><code>run_ranker.py</code> 会：
+1. 创建 <code>PhoenixModelConfig</code> 配置
+2. 初始化模型参数（随机权重，Demo 模式）
+3. 构造样例输入（用户历史 + 候选帖子）
+4. 运行前向传播，输出 19 维预测分数</p>
+<p><code>run_retrieval.py</code> 会：
+1. 创建检索模型配置
+2. 初始化双塔模型
+3. 构造用户查询
+4. 检索 Top-K 最相似的帖子</p>
+<h4 id="32-rust-home-mixer-thunder">3.2 Rust / Home Mixer &amp; Thunder</h4>
+<pre><code class="language-bash"># 需要 Rust toolchain
+rustup install stable
+
+# 编译（注意：完整编译需要额外依赖）
+cd candidate-pipeline
+cargo check  # 检查类型正确性
+</code></pre>
+<blockquote>
+<p><strong>注意</strong>：Rust 部分是生产代码骨架，依赖内部基础设施（Kafka、Strato、VF 服务等），无法直接在本地完整运行。我们主要阅读和分析其代码逻辑。</p>
+</blockquote>
+<h3 id="4">4. 数据流全链路追踪</h3>
+<p>让我们追踪一次 "用户张三打开 For You" 的完整请求：</p>
+<pre><code>Step 1: gRPC 请求到达 Home Mixer
+┌─────────────────────────────────────────┐
+│ ScoredPostsQuery {                      │
+│   viewer_id: 12345,                     │
+│   seen_ids: [100, 101, 102],           │
+│   served_ids: [100],                    │
+│   country_code: &quot;US&quot;,                   │
+│ }                                       │
+└─────────────────────────────────────────┘
+        │
+        ▼
+Step 2: Query Hydration（并行）
+├── UserActionSeqHydrator: 获取张三最近 500 条行为
+│   → 点赞了帖子A、回复了帖子B、转发了帖子C...
+└── UserFeaturesHydrator: 获取张三关注的 200 个账号
+        │
+        ▼
+Step 3: Candidate Sources（并行）
+├── ThunderSource: 从 200 个关注账号获取近期帖子
+│   → 返回 80 条 In-Network 候选
+└── PhoenixSource: 双塔模型检索全局帖子
+    → 返回 300 条 Out-of-Network 候选
+        │
+        ▼
+Step 4: 合并 380 条候选
+        │
+        ▼
+Step 5: Hydration（并行）
+├── CoreDataHydrator: 获取帖子文本、创建时间
+├── GizmoduckHydrator: 获取作者粉丝数、昵称
+├── InNetworkHydrator: 标记哪些是关注用户的帖子
+├── SubscriptionHydrator: 检查付费订阅状态
+└── VideoDurationHydrator: 获取视频时长
+        │
+        ▼
+Step 6: Filtering（顺序，10 个过滤器）
+380 条 → 去重 → 去除无效数据 → 去除旧帖 
+→ 去除自己的帖 → 转发去重 → 去除已看过的 
+→ 去除已推送过的 → 关键词过滤 → 社交关系过滤
+→ 剩余约 250 条
+        │
+        ▼
+Step 7: Scoring（顺序）
+├── PhoenixScorer: Grok Transformer 预测 19 种行为概率
+├── WeightedScorer: 加权公式计算综合得分
+├── AuthorDiversityScorer: 同一作者的帖子衰减
+└── OONScorer: 调整 Out-of-Network 得分
+        │
+        ▼
+Step 8: Selection
+TopKSelector: 按分数排序，取 Top-50
+        │
+        ▼
+Step 9: Post-Selection
+├── VFFilter: 安全过滤（删除/垃圾/暴力内容）
+└── DedupConversationFilter: 同一对话只保留一条
+→ 最终约 45 条
+        │
+        ▼
+Step 10: Side Effects
+CacheRequestInfo: 记录预测结果供后续分析
+        │
+        ▼
+📱 张三看到 45 条精心排序的帖子
+</code></pre>
+<hr>
+<h2 id="_4">💡 本节小结</h2>
+<table>
+<thead>
+<tr>
+<th>内容</th>
+<th>要点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>目录结构</td>
+<td>4 个顶层目录对应 4 大模块，各司其职</td>
+</tr>
+<tr>
+<td>模块关系</td>
+<td>Home Mixer 编排全局，调用 Thunder + Phoenix</td>
+</tr>
+<tr>
+<td>Demo 运行</td>
+<td><code>run_ranker.py</code> / <code>run_retrieval.py</code> 可直接体验</td>
+</tr>
+<tr>
+<td>数据流</td>
+<td>10 步从请求到信息流：Query → Source → Hydrate → Filter → Score → Select</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="4_1">📝 习题集4</h2>
+<p><strong>代码阅读：</strong>
+1. 运行 <code>run_ranker.py</code>，观察输出中 19 维 logits 的含义。哪些 action 的预测值较高？
+2. 阅读 <code>candidate-pipeline/candidate_pipeline.rs</code> 的 <code>execute()</code> 方法，画出执行流程图。</p>
+<p><strong>设计思考：</strong>
+3. 为什么 Filtering 阶段要分 Pre-Selection 和 Post-Selection 两次？各自负责什么类型的过滤？
+4. 从 380 条候选到最终 45 条，每个阶段大约过滤掉多少比例？这种漏斗设计的优势是什么？</p>
+<p><strong>动手实践：</strong>
+5. 修改 <code>run_ranker.py</code>，将候选数从默认值改为 1，观察输出变化。
+6. 在 <code>run_retrieval.py</code> 中，修改 Top-K 参数，观察检索结果的变化。</p>
+<hr>
+<blockquote>
+<p>下一课我们将深入 <strong>L05 - Candidate Pipeline 框架设计</strong>，解析这个精妙的通用推荐管道框架。</p>
+</blockquote></article><div class="nav-links"><a href="lesson-L03.html">← L03 Rust与Python技术栈快速上手</a><a href="lesson-L05.html">L05 CandidatePipeline框架设计 →</a></div></div>
+<footer><div class="container">x-algorithm 学习教程 · 基于 X (Twitter) For You Feed 开源算法</div></footer>
+</body></html>

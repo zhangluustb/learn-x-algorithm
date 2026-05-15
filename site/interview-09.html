@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rust并发与系统工程面试30题 — x-algorithm 学习教程</title>
+<style>
+:root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+nav { background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 0; position: sticky; top: 0; z-index: 10; }
+nav .container { display: flex; gap: 2rem; align-items: center; }
+nav .logo { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+nav a { color: var(--muted); font-size: 0.9rem; }
+nav a:hover { color: var(--text); text-decoration: none; }
+.hero { text-align: center; padding: 4rem 0 3rem; }
+.hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+.phase { margin-bottom: 2.5rem; }
+.phase-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; padding-left: 0.5rem; border-left: 3px solid; }
+.lessons-grid { display: grid; gap: 0.75rem; }
+.lesson-card { background: var(--card); border-radius: 0.5rem; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s, box-shadow 0.15s; }
+.lesson-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-decoration: none; }
+.lesson-card .num { font-size: 0.85rem; font-weight: 700; color: var(--muted); min-width: 2.5rem; }
+.lesson-card .title { color: var(--text); }
+.section-title { font-size: 1.5rem; font-weight: 700; margin: 3rem 0 1.5rem; }
+article { background: var(--card); border-radius: 0.75rem; padding: 2.5rem; margin: 2rem 0 3rem; }
+article h1 { font-size: 1.75rem; margin-bottom: 1.5rem; }
+article h2 { font-size: 1.35rem; margin: 2rem 0 0.75rem; color: var(--accent); }
+article h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+article p { margin-bottom: 1rem; }
+article ul, article ol { margin: 0.5rem 0 1rem 1.5rem; }
+article li { margin-bottom: 0.35rem; }
+article code { background: #334155; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
+article pre { background: #0f172a; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+article pre code { background: transparent; padding: 0; }
+article blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--muted); margin: 1rem 0; }
+article table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+article th, article td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
+article th { background: #334155; }
+article strong { color: #f1f5f9; }
+.breadcrumb { color: var(--muted); margin: 1.5rem 0 0; font-size: 0.9rem; }
+.breadcrumb a { color: var(--muted); }
+.nav-links { display: flex; justify-content: space-between; margin: 2rem 0 3rem; }
+.nav-links a { background: var(--card); padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; }
+footer { border-top: 1px solid #334155; padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: auto; }
+</style>
+</head>
+<body>
+<nav><div class="container">
+<span class="logo">📘 x-algorithm 学习教程</span>
+<a href="index.html">首页</a>
+<a href="learn.html">课程</a>
+<a href="interview.html">面试</a>
+</div></nav>
+<div class="container"><div class="breadcrumb"><a href="index.html">首页</a> / <a href="interview.html">面试</a> / Rust并发与系统工程面试30题</div><article><h1 id="09-rust-30">09 - Rust 并发与系统工程面试 30 题</h1>
+<blockquote>
+<p>覆盖 Rust 所有权、并发、异步编程，结合 x-algorithm 工程实践。</p>
+</blockquote>
+<hr>
+<h2 id="rust-q1-q10">Rust 基础（Q1-Q10）</h2>
+<p><strong>Q1:</strong> Rust 的所有权规则？⭐
+1. 每个值有且只有一个所有者
+2. 所有者离开作用域时值被释放
+3. 借用分为 <code>&amp;T</code>（共享）和 <code>&amp;mut T</code>（独占）</p>
+<p><strong>Q2:</strong> Arc vs Rc 的区别？⭐⭐
+Arc = Atomic Reference Counting（线程安全），Rc = Reference Counting（单线程）。x-algorithm 全部使用 Arc（多线程环境）。</p>
+<p><strong>Q3:</strong> Send + Sync trait 的含义？⭐⭐
+- Send：可以跨线程移交所有权
+- Sync：可以被多线程安全引用
+- x-algorithm 的所有 trait 都要求 <code>Send + Sync</code></p>
+<p><strong>Q4:</strong> Box<dyn Trait> vs 泛型 T: Trait 的对比？⭐⭐
+- <code>Box&lt;dyn Trait&gt;</code>：动态分发，运行时多态
+- <code>T: Trait</code>：静态分发，编译时单态化
+- x-algorithm 用 <code>Box&lt;dyn Trait&gt;</code> 实现可组合管道</p>
+<p><strong>Q5:</strong> Option<T> 和 Result<T,E> 的设计哲学？⭐
+<strong>Q6:</strong> 生命周期标注什么时候必须写？⭐⭐
+<strong>Q7:</strong> Enum + Pattern Matching 的强大之处？⭐
+<strong>Q8:</strong> Iterator trait 和零成本抽象？⭐⭐
+<strong>Q9:</strong> Closure 的三种 Fn trait？⭐⭐
+<strong>Q10:</strong> derive 宏和过程宏的使用场景？⭐</p>
+<h2 id="q11-q20">并发编程（Q11-Q20）</h2>
+<p><strong>Q11:</strong> DashMap 的内部实现原理？⭐⭐⭐
+分片（sharding）+ 每片一个 RwLock。哈希值决定分片归属。</p>
+<p><strong>Q12:</strong> Semaphore vs Mutex vs RwLock 的选择？⭐⭐
+- Mutex：保护共享数据
+- RwLock：读多写少
+- Semaphore：限制并发数（不保护数据）</p>
+<p><strong>Q13:</strong> Tokio runtime 的调度算法？⭐⭐⭐
+<strong>Q14:</strong> Channel (mpsc/broadcast/oneshot) 的使用场景？⭐⭐
+<strong>Q15:</strong> 死锁的检测和预防？⭐⭐
+<strong>Q16:</strong> async/await 的状态机编译过程？⭐⭐⭐
+<strong>Q17:</strong> join! vs select! 的区别？⭐⭐
+<strong>Q18:</strong> 背压（backpressure）在异步系统中的实现？⭐⭐
+<strong>Q19:</strong> 无锁数据结构（lock-free）的原理？⭐⭐⭐
+<strong>Q20:</strong> 内存排序（Memory Ordering）和 Atomic 操作？⭐⭐⭐</p>
+<h2 id="q21-q30">系统工程（Q21-Q30）</h2>
+<p><strong>Q21:</strong> Protobuf + tonic gRPC 的 Rust 实现？⭐⭐
+<strong>Q22:</strong> Kafka rdkafka 消费者的配置要点？⭐⭐
+<strong>Q23:</strong> 优雅关闭（graceful shutdown）的实现？⭐⭐
+<strong>Q24:</strong> 错误处理：anyhow vs thiserror？⭐
+<strong>Q25:</strong> tracing + opentelemetry 的分布式追踪？⭐⭐
+<strong>Q26:</strong> Criterion.rs 基准测试的最佳实践？⭐
+<strong>Q27:</strong> Cargo workspace 的大型项目组织？⭐
+<strong>Q28:</strong> unsafe Rust 的合理使用场景？⭐⭐
+<strong>Q29:</strong> 内存分配器选择（jemalloc/mimalloc）？⭐⭐
+<strong>Q30:</strong> Rust 在推荐系统中的优势和挑战？⭐⭐</p></article><div class="nav-links"><a href="interview-08.html">← 双塔检索模型面试30题</a><a href="interview-10.html">x-algorithm专属面试50题 →</a></div></div>
+<footer><div class="container">x-algorithm 学习教程 · 基于 X (Twitter) For You Feed 开源算法</div></footer>
+</body></html>

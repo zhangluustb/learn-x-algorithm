@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>L05 CandidatePipeline框架设计 — x-algorithm 学习教程</title>
+<style>
+:root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+nav { background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 0; position: sticky; top: 0; z-index: 10; }
+nav .container { display: flex; gap: 2rem; align-items: center; }
+nav .logo { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+nav a { color: var(--muted); font-size: 0.9rem; }
+nav a:hover { color: var(--text); text-decoration: none; }
+.hero { text-align: center; padding: 4rem 0 3rem; }
+.hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+.phase { margin-bottom: 2.5rem; }
+.phase-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; padding-left: 0.5rem; border-left: 3px solid; }
+.lessons-grid { display: grid; gap: 0.75rem; }
+.lesson-card { background: var(--card); border-radius: 0.5rem; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s, box-shadow 0.15s; }
+.lesson-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-decoration: none; }
+.lesson-card .num { font-size: 0.85rem; font-weight: 700; color: var(--muted); min-width: 2.5rem; }
+.lesson-card .title { color: var(--text); }
+.section-title { font-size: 1.5rem; font-weight: 700; margin: 3rem 0 1.5rem; }
+article { background: var(--card); border-radius: 0.75rem; padding: 2.5rem; margin: 2rem 0 3rem; }
+article h1 { font-size: 1.75rem; margin-bottom: 1.5rem; }
+article h2 { font-size: 1.35rem; margin: 2rem 0 0.75rem; color: var(--accent); }
+article h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+article p { margin-bottom: 1rem; }
+article ul, article ol { margin: 0.5rem 0 1rem 1.5rem; }
+article li { margin-bottom: 0.35rem; }
+article code { background: #334155; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
+article pre { background: #0f172a; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+article pre code { background: transparent; padding: 0; }
+article blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--muted); margin: 1rem 0; }
+article table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+article th, article td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
+article th { background: #334155; }
+article strong { color: #f1f5f9; }
+.breadcrumb { color: var(--muted); margin: 1.5rem 0 0; font-size: 0.9rem; }
+.breadcrumb a { color: var(--muted); }
+.nav-links { display: flex; justify-content: space-between; margin: 2rem 0 3rem; }
+.nav-links a { background: var(--card); padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; }
+footer { border-top: 1px solid #334155; padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: auto; }
+</style>
+</head>
+<body>
+<nav><div class="container">
+<span class="logo">📘 x-algorithm 学习教程</span>
+<a href="index.html">首页</a>
+<a href="learn.html">课程</a>
+<a href="interview.html">面试</a>
+</div></nav>
+<div class="container"><div class="breadcrumb"><a href="index.html">首页</a> / <a href="learn.html">课程</a> / L05</div><article><h1 id="l05-candidate-pipeline">L05 - Candidate Pipeline 框架设计</h1>
+<blockquote>
+<p><strong>"一个好的框架就像乐高积木——标准化的接口让你可以自由组合，构建出任何你想要的管道。"</strong></p>
+</blockquote>
+<hr>
+<h2 id="_1">📌 本节目标</h2>
+<ol>
+<li>理解 Pipeline Stage 枚举与执行顺序</li>
+<li>掌握六大核心 Trait 的接口设计</li>
+<li>区分并行与顺序执行策略</li>
+<li>了解 PipelineResult 结构与错误处理</li>
+</ol>
+<hr>
+<h2 id="_2">📚 前置知识</h2>
+<ul>
+<li>L03 中的 Rust trait 基础</li>
+<li>L04 中的项目结构</li>
+</ul>
+<hr>
+<h2 id="_3">正文讲解</h2>
+<h3 id="1-pipeline-stage">1. Pipeline Stage——管道的七个阶段</h3>
+<blockquote>
+<p><strong>类比</strong>：Candidate Pipeline 就像一条工厂流水线。原材料（候选帖子）从一端进入，经过清洗（过滤）、加工（补全）、质检（评分）、包装（选择），最终从另一端输出精品。</p>
+</blockquote>
+<pre><code class="language-rust">pub enum PipelineStage {
+    QueryHydrator,          // 1. 丰富查询信息
+    Source,                 // 2. 获取候选
+    Hydrator,               // 3. 补全候选数据
+    Filter,                 // 4. 过滤不合格候选
+    Scorer,                 // 5. 打分排名
+    PostSelectionHydrator,  // 6. 选后补全
+    PostSelectionFilter,    // 7. 选后过滤
+}
+</code></pre>
+<p>执行顺序是<strong>固定的</strong>——这保证了管道行为的可预测性：</p>
+<pre><code>QueryHydrator → Source → Hydrator → Filter → Scorer 
+→ Selector → PostSelectionHydrator → PostSelectionFilter
+→ SideEffect
+</code></pre>
+<h3 id="2-trait">2. 六大核心 Trait</h3>
+<h4 id="21-source">2.1 Source——候选生成</h4>
+<pre><code class="language-rust">#[async_trait]
+pub trait Source&lt;Q, C&gt;: Send + Sync {
+    fn name(&amp;self) -&gt; &amp;str;
+    fn enable(&amp;self, query: &amp;Q) -&gt; bool { true }
+    async fn get(&amp;self, query: &amp;Q) -&gt; Vec&lt;C&gt;;
+}
+</code></pre>
+<ul>
+<li><strong>职责</strong>：从数据源获取候选列表</li>
+<li><strong>并行执行</strong>：多个 Source 同时运行</li>
+<li><strong>x-algorithm 实例</strong>：<code>ThunderSource</code>（In-Network）、<code>PhoenixSource</code>（Out-of-Network）</li>
+</ul>
+<blockquote>
+<p><strong>类比</strong>：Source 就像渔船——多艘船同时出海（并行），各自捕获不同的鱼（候选），最后在港口合并。</p>
+</blockquote>
+<h4 id="22-hydrator">2.2 Hydrator——数据补全</h4>
+<pre><code class="language-rust">#[async_trait]
+pub trait Hydrator&lt;Q, C&gt;: Send + Sync {
+    fn name(&amp;self) -&gt; &amp;str;
+    fn enable(&amp;self, query: &amp;Q) -&gt; bool { true }
+    async fn hydrate(&amp;self, query: &amp;Q, candidates: Vec&lt;C&gt;) -&gt; Vec&lt;C&gt;;
+}
+</code></pre>
+<ul>
+<li><strong>职责</strong>：为候选添加额外信息（不改变数量）</li>
+<li><strong>并行执行</strong>：多个 Hydrator 同时运行</li>
+<li><strong>关键约束</strong>：<strong>必须保持候选数量和顺序不变</strong></li>
+<li><strong>x-algorithm 实例</strong>：<code>CoreDataHydrator</code>、<code>GizmoduckHydrator</code></li>
+</ul>
+<h4 id="23-filter">2.3 Filter——候选过滤</h4>
+<pre><code class="language-rust">#[async_trait]
+pub trait Filter&lt;Q, C&gt;: Send + Sync {
+    fn name(&amp;self) -&gt; &amp;str;
+    fn enable(&amp;self, query: &amp;Q) -&gt; bool { true }
+    async fn filter(&amp;self, query: &amp;Q, candidates: Vec&lt;C&gt;) 
+        -&gt; FilterResult&lt;C&gt;;
+}
+
+pub struct FilterResult&lt;C&gt; {
+    pub kept: Vec&lt;C&gt;,       // 保留的候选
+    pub removed: Vec&lt;C&gt;,    // 被移除的候选
+}
+</code></pre>
+<ul>
+<li><strong>职责</strong>：将候选分为"保留"和"移除"两组</li>
+<li><strong>顺序执行</strong>：每个 Filter 依次运行（后一个看到前一个的结果）</li>
+<li><strong>为什么顺序？</strong> 过滤有依赖关系（先去重再检查年龄）</li>
+</ul>
+<blockquote>
+<p><strong>类比</strong>：Filter 就像层层筛子——粗筛去大石头，细筛去沙子，每层筛掉不同类型的杂质。</p>
+</blockquote>
+<h4 id="24-scorer">2.4 Scorer——评分排名</h4>
+<pre><code class="language-rust">#[async_trait]
+pub trait Scorer&lt;Q, C&gt;: Send + Sync {
+    fn name(&amp;self) -&gt; &amp;str;
+    fn enable(&amp;self, query: &amp;Q) -&gt; bool { true }
+    async fn score(&amp;self, query: &amp;Q, candidates: Vec&lt;C&gt;) -&gt; Vec&lt;C&gt;;
+}
+</code></pre>
+<ul>
+<li><strong>职责</strong>：为每个候选计算分数</li>
+<li><strong>顺序执行</strong>：Scorer 依次运行（后一个可以基于前一个的分数再调整）</li>
+<li><strong>关键约束</strong>：<strong>必须保持候选数量和顺序不变</strong></li>
+<li><strong>x-algorithm 实例</strong>：PhoenixScorer → WeightedScorer → AuthorDiversityScorer → OONScorer</li>
+</ul>
+<h4 id="25-selector">2.5 Selector——选择截断</h4>
+<pre><code class="language-rust">#[async_trait]
+pub trait Selector&lt;Q, C&gt;: Send + Sync {
+    fn name(&amp;self) -&gt; &amp;str;
+    async fn select(&amp;self, query: &amp;Q, candidates: Vec&lt;C&gt;) -&gt; Vec&lt;C&gt;;
+}
+</code></pre>
+<ul>
+<li><strong>职责</strong>：排序并取 Top-K</li>
+<li><strong>只有一个</strong>：整个管道只有一个 Selector</li>
+<li><strong>x-algorithm 实例</strong>：<code>TopKScoreSelector</code></li>
+</ul>
+<h4 id="26-sideeffect">2.6 SideEffect——副作用</h4>
+<pre><code class="language-rust">#[async_trait]
+pub trait SideEffect&lt;Q, C&gt;: Send + Sync {
+    fn name(&amp;self) -&gt; &amp;str;
+    async fn apply(&amp;self, query: &amp;Q, candidates: &amp;[C]);
+}
+</code></pre>
+<ul>
+<li><strong>职责</strong>：执行不影响结果的副作用（日志、缓存、监控）</li>
+<li><strong>Fire-and-forget</strong>：不阻塞主流程</li>
+</ul>
+<h3 id="3-vs">3. 并行 vs 顺序执行策略</h3>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>执行方式</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QueryHydrator</td>
+<td><strong>并行</strong></td>
+<td>各自获取独立数据，互不依赖</td>
+</tr>
+<tr>
+<td>Source</td>
+<td><strong>并行</strong></td>
+<td>不同数据源独立查询</td>
+</tr>
+<tr>
+<td>Hydrator</td>
+<td><strong>并行</strong></td>
+<td>各自补全不同字段</td>
+</tr>
+<tr>
+<td>Filter</td>
+<td><strong>顺序</strong></td>
+<td>后续过滤器依赖前序结果</td>
+</tr>
+<tr>
+<td>Scorer</td>
+<td><strong>顺序</strong></td>
+<td>后续评分器可能依赖前序分数</td>
+</tr>
+<tr>
+<td>Selector</td>
+<td><strong>单一</strong></td>
+<td>只有一个选择器</td>
+</tr>
+<tr>
+<td>PostSelectionHydrator</td>
+<td><strong>并行</strong></td>
+<td>同 Hydrator</td>
+</tr>
+<tr>
+<td>PostSelectionFilter</td>
+<td><strong>顺序</strong></td>
+<td>同 Filter</td>
+</tr>
+<tr>
+<td>SideEffect</td>
+<td><strong>Fire-forget</strong></td>
+<td>异步执行，不阻塞</td>
+</tr>
+</tbody>
+</table>
+<h3 id="4-pipelineresult">4. PipelineResult 与执行引擎</h3>
+<pre><code class="language-rust">pub struct PipelineResult&lt;Q, C&gt; {
+    pub retrieved_candidates: Vec&lt;C&gt;,    // Source 阶段获取的全部候选
+    pub filtered_candidates: Vec&lt;C&gt;,     // 被过滤掉的候选（可用于调试）
+    pub selected_candidates: Vec&lt;C&gt;,     // 最终选出的候选
+    pub query: Arc&lt;Q&gt;,                   // 最终的 Query（经过 hydration）
+}
+</code></pre>
+<p><strong>执行引擎伪代码：</strong></p>
+<pre><code class="language-rust">async fn execute(query: Q) -&gt; PipelineResult&lt;Q, C&gt; {
+    // 1. 并行 hydrate query
+    let query = join_all(query_hydrators.map(|h| h.hydrate(query))); 
+
+    // 2. 并行获取候选
+    let candidates = join_all(sources.map(|s| s.get(&amp;query)))
+        .flatten();
+
+    // 3. 并行补全
+    let candidates = join_all(hydrators.map(|h| h.hydrate(&amp;query, candidates)));
+
+    // 4. 顺序过滤
+    let (kept, removed) = filters.fold(candidates, |c, f| f.filter(&amp;query, c));
+
+    // 5. 顺序评分
+    let scored = scorers.fold(kept, |c, s| s.score(&amp;query, c));
+
+    // 6. 选择 Top-K
+    let selected = selector.select(&amp;query, scored);
+
+    // 7. 选后补全 + 过滤
+    let final_candidates = post_process(selected);
+
+    // 8. 异步副作用
+    spawn(side_effects.map(|se| se.apply(&amp;query, &amp;final_candidates)));
+
+    PipelineResult { ... }
+}
+</code></pre>
+<p><strong>错误处理策略：</strong>
+- 每个组件有 <code>enable()</code> 方法，可以条件性跳过
+- 单个 Source 失败不会导致整个管道失败（其他 Source 继续）
+- Filter/Scorer 失败会记录日志但尽量继续</p>
+<hr>
+<h2 id="_4">💡 本节小结</h2>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>一句话总结</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pipeline Stage</td>
+<td>固定的七阶段执行顺序，保证行为可预测</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>并行获取候选，多数据源合并</td>
+</tr>
+<tr>
+<td>Filter</td>
+<td>顺序执行，将候选分为保留/移除</td>
+</tr>
+<tr>
+<td>Scorer</td>
+<td>顺序执行，逐步细化评分</td>
+</tr>
+<tr>
+<td>Selector</td>
+<td>排序截断，取 Top-K</td>
+</tr>
+<tr>
+<td>并行策略</td>
+<td>无依赖的阶段并行，有依赖的阶段顺序</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="5">📝 习题集5</h2>
+<p><strong>代码阅读：</strong>
+1. 阅读 <code>candidate_pipeline.rs</code> 的 <code>execute()</code> 方法，列出所有使用 <code>join_all</code> 的并行阶段。
+2. <code>FilterResult</code> 为什么同时保留 <code>kept</code> 和 <code>removed</code>？这对调试有什么帮助？</p>
+<p><strong>设计思考：</strong>
+3. 如果将 Filter 也改为并行执行，会出现什么问题？举例说明。
+4. 为什么 Hydrator 必须保持候选数量不变？如果 Hydrator 发现某个候选数据获取失败，应该怎么处理？
+5. 对比 x-algorithm 的 Pipeline 框架和 Unix 管道（<code>cat | grep | sort</code>），找出设计理念的异同。</p>
+<hr>
+<blockquote>
+<p>下一课我们将深入 <strong>L06 - Thunder 实时帖子存储引擎</strong>，了解 In-Network 候选的获取方式。</p>
+</blockquote></article><div class="nav-links"><a href="lesson-L04.html">← L04 x-algorithm项目导览</a><a href="lesson-L06.html">L06 Thunder实时帖子存储引擎 →</a></div></div>
+<footer><div class="container">x-algorithm 学习教程 · 基于 X (Twitter) For You Feed 开源算法</div></footer>
+</body></html>

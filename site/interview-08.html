@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>双塔检索模型面试30题 — x-algorithm 学习教程</title>
+<style>
+:root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+nav { background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 0; position: sticky; top: 0; z-index: 10; }
+nav .container { display: flex; gap: 2rem; align-items: center; }
+nav .logo { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+nav a { color: var(--muted); font-size: 0.9rem; }
+nav a:hover { color: var(--text); text-decoration: none; }
+.hero { text-align: center; padding: 4rem 0 3rem; }
+.hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+.phase { margin-bottom: 2.5rem; }
+.phase-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; padding-left: 0.5rem; border-left: 3px solid; }
+.lessons-grid { display: grid; gap: 0.75rem; }
+.lesson-card { background: var(--card); border-radius: 0.5rem; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s, box-shadow 0.15s; }
+.lesson-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-decoration: none; }
+.lesson-card .num { font-size: 0.85rem; font-weight: 700; color: var(--muted); min-width: 2.5rem; }
+.lesson-card .title { color: var(--text); }
+.section-title { font-size: 1.5rem; font-weight: 700; margin: 3rem 0 1.5rem; }
+article { background: var(--card); border-radius: 0.75rem; padding: 2.5rem; margin: 2rem 0 3rem; }
+article h1 { font-size: 1.75rem; margin-bottom: 1.5rem; }
+article h2 { font-size: 1.35rem; margin: 2rem 0 0.75rem; color: var(--accent); }
+article h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+article p { margin-bottom: 1rem; }
+article ul, article ol { margin: 0.5rem 0 1rem 1.5rem; }
+article li { margin-bottom: 0.35rem; }
+article code { background: #334155; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
+article pre { background: #0f172a; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+article pre code { background: transparent; padding: 0; }
+article blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--muted); margin: 1rem 0; }
+article table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+article th, article td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
+article th { background: #334155; }
+article strong { color: #f1f5f9; }
+.breadcrumb { color: var(--muted); margin: 1.5rem 0 0; font-size: 0.9rem; }
+.breadcrumb a { color: var(--muted); }
+.nav-links { display: flex; justify-content: space-between; margin: 2rem 0 3rem; }
+.nav-links a { background: var(--card); padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; }
+footer { border-top: 1px solid #334155; padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: auto; }
+</style>
+</head>
+<body>
+<nav><div class="container">
+<span class="logo">📘 x-algorithm 学习教程</span>
+<a href="index.html">首页</a>
+<a href="learn.html">课程</a>
+<a href="interview.html">面试</a>
+</div></nav>
+<div class="container"><div class="breadcrumb"><a href="index.html">首页</a> / <a href="interview.html">面试</a> / 双塔检索模型面试30题</div><article><h1 id="08-30">08 - 双塔检索模型面试 30 题</h1>
+<blockquote>
+<p>覆盖 Two-Tower 模型设计、训练、ANN 索引、部署全链路。</p>
+</blockquote>
+<hr>
+<h2 id="q1-q10">模型设计（Q1-Q10）</h2>
+<p><strong>Q1:</strong> Two-Tower 模型的核心思想和数学定义？⭐⭐
+$$\text{score}(u, i) = \langle f_\theta(u), g_\phi(i) \rangle$$
+用户塔 $f_\theta$ 和物品塔 $g_\phi$ 独立编码，点积计算相似度。</p>
+<p><strong>Q2:</strong> 为什么 Candidate Tower 比 User Tower 简单？⭐⭐
+因为 Candidate Tower 需要离线编码数十亿帖子，必须足够轻量。</p>
+<p><strong>Q3:</strong> L2 归一化的作用和数学意义？⭐⭐
+归一化后点积 = 余弦相似度，值域 [-1, 1]，可比较和阈值过滤。</p>
+<p><strong>Q4:</strong> 双塔能否建模用户-物品的复杂交互？⭐⭐⭐
+不能。双塔只有点积一种交互方式。这是检索+排序两阶段存在的原因。</p>
+<p><strong>Q5:</strong> Negative Sampling 的策略选择？⭐⭐⭐
+<strong>Q6:</strong> 温度参数在对比学习中的作用？⭐⭐
+<strong>Q7:</strong> In-Batch Negatives 的优缺点？⭐⭐
+<strong>Q8:</strong> Hard Negative Mining 的策略？⭐⭐⭐
+<strong>Q9:</strong> 用户塔是否应该用 Transformer？⭐⭐
+<strong>Q10:</strong> 多目标双塔（多个嵌入空间）的设计？⭐⭐⭐</p>
+<h2 id="ann-q11-q20">ANN 索引（Q11-Q20）</h2>
+<p><strong>Q11:</strong> HNSW 索引的原理和参数选择？⭐⭐⭐
+<strong>Q12:</strong> IVF-PQ 索引的压缩原理？⭐⭐⭐
+<strong>Q13:</strong> ScaNN 的各向异性量化？⭐⭐
+<strong>Q14:</strong> 索引构建的 recall vs latency 权衡？⭐⭐
+<strong>Q15:</strong> 增量索引更新策略？⭐⭐⭐
+<strong>Q16:</strong> 索引分片（sharding）策略？⭐⭐
+<strong>Q17:</strong> 混合检索：ANN + 规则过滤？⭐⭐
+<strong>Q18:</strong> FAISS vs Milvus vs Pinecone 对比？⭐
+<strong>Q19:</strong> 嵌入降维（PCA/LSH）的应用？⭐⭐
+<strong>Q20:</strong> 索引 warm-up 和 cache 优化？⭐⭐</p>
+<h2 id="q21-q30">训练与部署（Q21-Q30）</h2>
+<p><strong>Q21:</strong> 双塔训练的损失函数选择？⭐⭐
+<strong>Q22:</strong> 候选嵌入的更新频率如何确定？⭐⭐
+<strong>Q23:</strong> 用户嵌入的在线计算 vs 离线计算？⭐⭐
+<strong>Q24:</strong> 冷启动帖子如何进入候选池？⭐⭐
+<strong>Q25:</strong> 双塔模型的在线 serving 架构？⭐⭐
+<strong>Q26:</strong> 嵌入维度对检索质量的影响？⭐⭐
+<strong>Q27:</strong> 多模态双塔（图文+视频）？⭐⭐⭐
+<strong>Q28:</strong> 语义检索 vs 协同过滤检索的对比？⭐⭐
+<strong>Q29:</strong> 检索多样性的保证策略？⭐⭐
+<strong>Q30:</strong> 双塔检索的未来发展方向？⭐⭐⭐</p></article><div class="nav-links"><a href="interview-07.html">← 推荐系统排序模型面试50题</a><a href="interview-09.html">Rust并发与系统工程面试30题 →</a></div></div>
+<footer><div class="container">x-algorithm 学习教程 · 基于 X (Twitter) For You Feed 开源算法</div></footer>
+</body></html>

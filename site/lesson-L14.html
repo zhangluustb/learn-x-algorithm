@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>L14 Scoring全链路 — x-algorithm 学习教程</title>
+<style>
+:root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+nav { background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 0; position: sticky; top: 0; z-index: 10; }
+nav .container { display: flex; gap: 2rem; align-items: center; }
+nav .logo { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+nav a { color: var(--muted); font-size: 0.9rem; }
+nav a:hover { color: var(--text); text-decoration: none; }
+.hero { text-align: center; padding: 4rem 0 3rem; }
+.hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+.phase { margin-bottom: 2.5rem; }
+.phase-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; padding-left: 0.5rem; border-left: 3px solid; }
+.lessons-grid { display: grid; gap: 0.75rem; }
+.lesson-card { background: var(--card); border-radius: 0.5rem; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s, box-shadow 0.15s; }
+.lesson-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-decoration: none; }
+.lesson-card .num { font-size: 0.85rem; font-weight: 700; color: var(--muted); min-width: 2.5rem; }
+.lesson-card .title { color: var(--text); }
+.section-title { font-size: 1.5rem; font-weight: 700; margin: 3rem 0 1.5rem; }
+article { background: var(--card); border-radius: 0.75rem; padding: 2.5rem; margin: 2rem 0 3rem; }
+article h1 { font-size: 1.75rem; margin-bottom: 1.5rem; }
+article h2 { font-size: 1.35rem; margin: 2rem 0 0.75rem; color: var(--accent); }
+article h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+article p { margin-bottom: 1rem; }
+article ul, article ol { margin: 0.5rem 0 1rem 1.5rem; }
+article li { margin-bottom: 0.35rem; }
+article code { background: #334155; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
+article pre { background: #0f172a; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+article pre code { background: transparent; padding: 0; }
+article blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--muted); margin: 1rem 0; }
+article table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+article th, article td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
+article th { background: #334155; }
+article strong { color: #f1f5f9; }
+.breadcrumb { color: var(--muted); margin: 1.5rem 0 0; font-size: 0.9rem; }
+.breadcrumb a { color: var(--muted); }
+.nav-links { display: flex; justify-content: space-between; margin: 2rem 0 3rem; }
+.nav-links a { background: var(--card); padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; }
+footer { border-top: 1px solid #334155; padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: auto; }
+</style>
+</head>
+<body>
+<nav><div class="container">
+<span class="logo">📘 x-algorithm 学习教程</span>
+<a href="index.html">首页</a>
+<a href="learn.html">课程</a>
+<a href="interview.html">面试</a>
+</div></nav>
+<div class="container"><div class="breadcrumb"><a href="index.html">首页</a> / <a href="learn.html">课程</a> / L14</div><article><h1 id="l14-scoring-ml">L14 - Scoring 全链路：从 ML 预测到最终排分</h1>
+<blockquote>
+<p><strong>"四个评分器像接力赛跑——第一棒是 AI 预测，最后一棒是多样性调整，每一棒都不可或缺。"</strong></p>
+</blockquote>
+<hr>
+<h2 id="_1">📌 本节目标</h2>
+<ol>
+<li>掌握 PhoenixScorer 调用 Transformer 的过程</li>
+<li>理解 WeightedScorer 的加权组合公式</li>
+<li>了解 AuthorDiversityScorer 的衰减机制</li>
+<li>认识 OONScorer 的 Out-of-Network 调整</li>
+<li>熟悉 PhoenixScores 结构体</li>
+</ol>
+<hr>
+<h2 id="_2">📚 前置知识</h2>
+<ul>
+<li>L09 中的 Phoenix 排序模型</li>
+<li>L11 中的管道评分阶段</li>
+</ul>
+<hr>
+<h2 id="_3">正文讲解</h2>
+<h3 id="1-phoenixscorerai">1. PhoenixScorer——AI 预测的入口</h3>
+<blockquote>
+<p><strong>类比</strong>：PhoenixScorer 就像给每个候选帖子做了一次"全面体检"——不是简单查个血压，而是同时检查 19 项指标。</p>
+</blockquote>
+<pre><code class="language-rust">pub struct PhoenixScorer {
+    phoenix_client: Arc&lt;PhoenixRankingClient&gt;,
+}
+
+#[async_trait]
+impl Scorer&lt;ScoredPostsQuery, PostCandidate&gt; for PhoenixScorer {
+    fn name(&amp;self) -&gt; &amp;str { &quot;PhoenixScorer&quot; }
+
+    async fn score(&amp;self, query: &amp;ScoredPostsQuery, 
+                   candidates: Vec&lt;PostCandidate&gt;) -&gt; Vec&lt;PostCandidate&gt; 
+    {
+        // 1. 构建模型输入
+        let model_input = build_phoenix_input(
+            &amp;query.user_action_sequence,  // 用户行为序列
+            &amp;candidates,                   // 候选帖子列表
+        );
+
+        // 2. 调用 Phoenix Transformer 模型
+        let predictions = self.phoenix_client
+            .predict(model_input)
+            .await;
+        // predictions: [num_candidates, 19]
+
+        // 3. 填充预测分数到候选
+        candidates.into_iter()
+            .zip(predictions)
+            .map(|(mut candidate, pred)| {
+                candidate.phoenix_scores = PhoenixScores {
+                    favorite_score:    Some(sigmoid(pred[0])),
+                    reply_score:       Some(sigmoid(pred[1])),
+                    retweet_score:     Some(sigmoid(pred[2])),
+                    quote_score:       Some(sigmoid(pred[3])),
+                    click_score:       Some(sigmoid(pred[4])),
+                    profile_click_score: Some(sigmoid(pred[5])),
+                    vqv_score:         Some(sigmoid(pred[6])),
+                    photo_expand_score: Some(sigmoid(pred[7])),
+                    share_score:       Some(sigmoid(pred[8])),
+                    share_via_dm_score: Some(sigmoid(pred[9])),
+                    share_via_copy_link_score: Some(sigmoid(pred[10])),
+                    dwell_score:       Some(sigmoid(pred[11])),
+                    quoted_click_score: Some(sigmoid(pred[12])),
+                    follow_author_score: Some(sigmoid(pred[13])),
+                    not_interested_score: Some(sigmoid(pred[14])),
+                    block_author_score: Some(sigmoid(pred[15])),
+                    mute_author_score: Some(sigmoid(pred[16])),
+                    report_score:      Some(sigmoid(pred[17])),
+                    dwell_time:        Some(pred[18]),
+                };
+                candidate.prediction_request_id = Some(pred.request_id);
+                candidate.last_scored_at_ms = Some(now_ms());
+                candidate
+            })
+            .collect()
+    }
+}
+</code></pre>
+<p><strong>PhoenixScores 结构体：</strong></p>
+<pre><code class="language-rust">pub struct PhoenixScores {
+    // 正面行为（概率 0-1）
+    pub favorite_score: Option&lt;f64&gt;,
+    pub reply_score: Option&lt;f64&gt;,
+    pub retweet_score: Option&lt;f64&gt;,
+    pub quote_score: Option&lt;f64&gt;,
+    pub click_score: Option&lt;f64&gt;,
+    pub profile_click_score: Option&lt;f64&gt;,
+    pub vqv_score: Option&lt;f64&gt;,
+    pub photo_expand_score: Option&lt;f64&gt;,
+    pub share_score: Option&lt;f64&gt;,
+    pub share_via_dm_score: Option&lt;f64&gt;,
+    pub share_via_copy_link_score: Option&lt;f64&gt;,
+    pub dwell_score: Option&lt;f64&gt;,
+    pub quoted_click_score: Option&lt;f64&gt;,
+    pub follow_author_score: Option&lt;f64&gt;,
+
+    // 负面行为（概率 0-1）
+    pub not_interested_score: Option&lt;f64&gt;,
+    pub block_author_score: Option&lt;f64&gt;,
+    pub mute_author_score: Option&lt;f64&gt;,
+    pub report_score: Option&lt;f64&gt;,
+
+    // 连续值
+    pub dwell_time: Option&lt;f64&gt;,
+}
+</code></pre>
+<h3 id="2-weightedscorer-19-1">2. WeightedScorer——从 19 维到 1 维</h3>
+<pre><code class="language-rust">pub struct WeightedScorer;
+
+impl Scorer&lt;ScoredPostsQuery, PostCandidate&gt; for WeightedScorer {
+    async fn score(&amp;self, _query: &amp;Q, candidates: Vec&lt;PostCandidate&gt;) 
+        -&gt; Vec&lt;PostCandidate&gt; 
+    {
+        candidates.into_iter()
+            .map(|mut c| {
+                let s = &amp;c.phoenix_scores;
+
+                let weighted_score = 
+                    // 正面行为（正权重）
+                      0.5  * s.favorite_score.unwrap_or(0.0)
+                    + 1.0  * s.reply_score.unwrap_or(0.0)
+                    + 11.0 * s.retweet_score.unwrap_or(0.0)
+                    + 11.0 * s.quote_score.unwrap_or(0.0)
+                    + 0.5  * s.click_score.unwrap_or(0.0)
+                    + 0.5  * s.profile_click_score.unwrap_or(0.0)
+                    + 0.01 * s.vqv_score.unwrap_or(0.0)
+                    + 0.005* s.photo_expand_score.unwrap_or(0.0)
+                    + 1.0  * s.share_score.unwrap_or(0.0)
+                    + 1.0  * s.share_via_dm_score.unwrap_or(0.0)
+                    + 1.0  * s.share_via_copy_link_score.unwrap_or(0.0)
+                    + 0.1  * s.dwell_score.unwrap_or(0.0)
+                    + 11.0 * s.follow_author_score.unwrap_or(0.0)
+                    // 负面行为（负权重）
+                    - 74.0 * s.not_interested_score.unwrap_or(0.0)
+                    - 74.0 * s.block_author_score.unwrap_or(0.0)
+                    - 74.0 * s.mute_author_score.unwrap_or(0.0)
+                    - 74.0 * s.report_score.unwrap_or(0.0);
+
+                c.weighted_score = Some(weighted_score);
+                c.score = Some(weighted_score);
+                c
+            })
+            .collect()
+    }
+}
+</code></pre>
+<p><strong>权重设计哲学：</strong></p>
+<p>$$\text{Final Score} = \sum_{i \in \text{positive}} w_i \cdot P(\text{action}<em>i) - \sum</em>{j \in \text{negative}} w_j \cdot P(\text{action}_j)$$</p>
+<table>
+<thead>
+<tr>
+<th>权重层级</th>
+<th>行为</th>
+<th>权重</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>极高</strong></td>
+<td>retweet, quote, follow</td>
+<td>11.0</td>
+<td>最强的正面参与信号</td>
+</tr>
+<tr>
+<td><strong>高</strong></td>
+<td>reply, share</td>
+<td>1.0</td>
+<td>高质量互动</td>
+</tr>
+<tr>
+<td><strong>中</strong></td>
+<td>favorite, click, profile_click</td>
+<td>0.5</td>
+<td>轻度参与</td>
+</tr>
+<tr>
+<td><strong>低</strong></td>
+<td>dwell, video_view, photo</td>
+<td>0.01-0.1</td>
+<td>被动消费</td>
+</tr>
+<tr>
+<td><strong>极高负</strong></td>
+<td>block, mute, report, not_interested</td>
+<td>-74.0</td>
+<td>必须强力压制</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>负面权重 (-74) 远大于正面权重绝对值——即使一条帖子 P(like)=0.9，只要 P(block)=0.02，最终分数也会被大幅拉低。</p>
+</blockquote>
+<h3 id="3-authordiversityscorer">3. AuthorDiversityScorer——防止"刷屏"</h3>
+<blockquote>
+<p><strong>类比</strong>：如果信息流前 10 条都是同一个人发的，用户体验会很糟糕。AuthorDiversityScorer 就像"限流阀"——同一个作者的帖子，第二条打八折，第三条打六折…</p>
+</blockquote>
+<pre><code class="language-rust">pub struct AuthorDiversityScorer;
+
+impl Scorer&lt;ScoredPostsQuery, PostCandidate&gt; for AuthorDiversityScorer {
+    async fn score(&amp;self, _query: &amp;Q, mut candidates: Vec&lt;PostCandidate&gt;) 
+        -&gt; Vec&lt;PostCandidate&gt; 
+    {
+        // 按当前分数降序排列
+        candidates.sort_by(|a, b| 
+            b.score.partial_cmp(&amp;a.score).unwrap());
+
+        // 统计每个作者已出现的次数
+        let mut author_count: HashMap&lt;u64, usize&gt; = HashMap::new();
+
+        for candidate in candidates.iter_mut() {
+            let count = author_count
+                .entry(candidate.author_id)
+                .or_insert(0);
+            *count += 1;
+
+            if *count &gt; 1 {
+                // 衰减公式：score *= 1 / count
+                let attenuation = 1.0 / (*count as f64);
+                candidate.score = candidate.score
+                    .map(|s| s * attenuation);
+            }
+        }
+
+        candidates
+    }
+}
+</code></pre>
+<p><strong>衰减效果：</strong></p>
+<table>
+<thead>
+<tr>
+<th>出现次数</th>
+<th>衰减因子</th>
+<th>效果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>第 1 条</td>
+<td>1.0</td>
+<td>原始分数</td>
+</tr>
+<tr>
+<td>第 2 条</td>
+<td>0.5</td>
+<td>分数减半</td>
+</tr>
+<tr>
+<td>第 3 条</td>
+<td>0.33</td>
+<td>分数三分之一</td>
+</tr>
+<tr>
+<td>第 4 条</td>
+<td>0.25</td>
+<td>分数四分之一</td>
+</tr>
+</tbody>
+</table>
+<h3 id="4-oonscorerout-of-network">4. OONScorer——Out-of-Network 调整</h3>
+<pre><code class="language-rust">pub struct OONScorer;
+
+impl Scorer&lt;ScoredPostsQuery, PostCandidate&gt; for OONScorer {
+    async fn score(&amp;self, _query: &amp;Q, candidates: Vec&lt;PostCandidate&gt;) 
+        -&gt; Vec&lt;PostCandidate&gt; 
+    {
+        candidates.into_iter()
+            .map(|mut c| {
+                if c.in_network == Some(false) {
+                    // Out-of-Network 帖子分数微调
+                    // 确保 OON 内容有机会进入 Top-K
+                    // 但不会过度压制 In-Network 内容
+                    c.score = c.score.map(|s| s * OON_BOOST_FACTOR);
+                }
+                c
+            })
+            .collect()
+    }
+}
+</code></pre>
+<p>OONScorer 的职责是<strong>校准</strong> In-Network 和 Out-of-Network 之间的分数尺度。由于两者来自不同 Source，原始分数的分布可能不同。</p>
+<h3 id="5">5. 四级评分链路总结</h3>
+<pre><code>候选帖子
+    │
+    ▼
+┌───────────────────────────────────────────────────┐
+│ ① PhoenixScorer                                   │
+│   输入: 用户行为历史 + 候选帖子信息                    │
+│   输出: 19 维预测概率 (PhoenixScores)               │
+│   延迟: ~80ms (Transformer 推理)                    │
+└───────────────────┬───────────────────────────────┘
+                    ▼
+┌───────────────────────────────────────────────────┐
+│ ② WeightedScorer                                   │
+│   输入: 19 维预测                                    │
+│   输出: 单一加权分数 (weighted_score)                 │
+│   公式: Σ(w_i × P_i) - Σ(w_j × P_j)              │
+│   延迟: &lt;1ms                                        │
+└───────────────────┬───────────────────────────────┘
+                    ▼
+┌───────────────────────────────────────────────────┐
+│ ③ AuthorDiversityScorer                            │
+│   输入: 加权分数 + 作者 ID                           │
+│   输出: 多样性调整后的分数                            │
+│   规则: 同一作者第 N 条 → score × 1/N               │
+│   延迟: &lt;1ms                                        │
+└───────────────────┬───────────────────────────────┘
+                    ▼
+┌───────────────────────────────────────────────────┐
+│ ④ OONScorer                                        │
+│   输入: 调整后分数 + in_network 标记                  │
+│   输出: OON 校准后的最终分数                          │
+│   延迟: &lt;1ms                                        │
+└───────────────────┬───────────────────────────────┘
+                    ▼
+              最终排序分数
+</code></pre>
+<hr>
+<h2 id="_4">💡 本节小结</h2>
+<table>
+<thead>
+<tr>
+<th>Scorer</th>
+<th>输入→输出</th>
+<th>核心逻辑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PhoenixScorer</td>
+<td>帖子 → 19维概率</td>
+<td>Transformer 推理</td>
+</tr>
+<tr>
+<td>WeightedScorer</td>
+<td>19维 → 1维分数</td>
+<td>加权求和，负面行为强力惩罚</td>
+</tr>
+<tr>
+<td>AuthorDiversityScorer</td>
+<td>分数 → 衰减分数</td>
+<td>同作者衰减 1/N</td>
+</tr>
+<tr>
+<td>OONScorer</td>
+<td>分数 → 校准分数</td>
+<td>In/Out-Network 尺度对齐</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="14">📝 习题集14</h2>
+<p><strong>概念理解：</strong>
+1. WeightedScorer 中，<code>retweet</code> 的权重 (11.0) 为什么比 <code>favorite</code> (0.5) 高这么多？
+2. 负面行为权重 -74.0 是如何确定的？改为 -10 会怎样？</p>
+<p><strong>数学推导：</strong>
+3. 假设一条帖子的 P(favorite)=0.3, P(retweet)=0.1, P(block)=0.01，计算其 weighted_score。
+4. 如果一个作者有 5 条帖子，分数分别是 10, 8, 6, 4, 2。经过 AuthorDiversityScorer 后，各条的分数是多少？</p>
+<p><strong>设计思考：</strong>
+5. 为什么评分器要顺序执行而不是并行？如果 WeightedScorer 和 AuthorDiversityScorer 并行会怎样？
+6. 如果产品团队想增加视频内容的曝光，应该调整哪些权重？</p>
+<hr>
+<blockquote>
+<p>下一课我们将学习 <strong>L15 - Selection 与 Post-Processing</strong>。</p>
+</blockquote></article><div class="nav-links"><a href="lesson-L13.html">← L13 Hydration与Filtering详解</a><a href="lesson-L15.html">L15 Selection与PostProcessing →</a></div></div>
+<footer><div class="container">x-algorithm 学习教程 · 基于 X (Twitter) For You Feed 开源算法</div></footer>
+</body></html>

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>L13 Hydration与Filtering详解 — x-algorithm 学习教程</title>
+<style>
+:root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+nav { background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 0; position: sticky; top: 0; z-index: 10; }
+nav .container { display: flex; gap: 2rem; align-items: center; }
+nav .logo { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+nav a { color: var(--muted); font-size: 0.9rem; }
+nav a:hover { color: var(--text); text-decoration: none; }
+.hero { text-align: center; padding: 4rem 0 3rem; }
+.hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+.phase { margin-bottom: 2.5rem; }
+.phase-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; padding-left: 0.5rem; border-left: 3px solid; }
+.lessons-grid { display: grid; gap: 0.75rem; }
+.lesson-card { background: var(--card); border-radius: 0.5rem; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s, box-shadow 0.15s; }
+.lesson-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-decoration: none; }
+.lesson-card .num { font-size: 0.85rem; font-weight: 700; color: var(--muted); min-width: 2.5rem; }
+.lesson-card .title { color: var(--text); }
+.section-title { font-size: 1.5rem; font-weight: 700; margin: 3rem 0 1.5rem; }
+article { background: var(--card); border-radius: 0.75rem; padding: 2.5rem; margin: 2rem 0 3rem; }
+article h1 { font-size: 1.75rem; margin-bottom: 1.5rem; }
+article h2 { font-size: 1.35rem; margin: 2rem 0 0.75rem; color: var(--accent); }
+article h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+article p { margin-bottom: 1rem; }
+article ul, article ol { margin: 0.5rem 0 1rem 1.5rem; }
+article li { margin-bottom: 0.35rem; }
+article code { background: #334155; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
+article pre { background: #0f172a; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+article pre code { background: transparent; padding: 0; }
+article blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--muted); margin: 1rem 0; }
+article table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+article th, article td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
+article th { background: #334155; }
+article strong { color: #f1f5f9; }
+.breadcrumb { color: var(--muted); margin: 1.5rem 0 0; font-size: 0.9rem; }
+.breadcrumb a { color: var(--muted); }
+.nav-links { display: flex; justify-content: space-between; margin: 2rem 0 3rem; }
+.nav-links a { background: var(--card); padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; }
+footer { border-top: 1px solid #334155; padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: auto; }
+</style>
+</head>
+<body>
+<nav><div class="container">
+<span class="logo">📘 x-algorithm 学习教程</span>
+<a href="index.html">首页</a>
+<a href="learn.html">课程</a>
+<a href="interview.html">面试</a>
+</div></nav>
+<div class="container"><div class="breadcrumb"><a href="index.html">首页</a> / <a href="learn.html">课程</a> / L13</div><article><h1 id="l13-hydration-filtering">L13 - Hydration 与 Filtering 详解</h1>
+<blockquote>
+<p><strong>"推荐系统的质量，取决于你丢掉了什么——好的过滤器让用户永远看不到不该看到的内容。"</strong></p>
+</blockquote>
+<hr>
+<h2 id="_1">📌 本节目标</h2>
+<ol>
+<li>理解五大 Hydrator 各自的职责</li>
+<li>逐一解析十大 Pre-Selection Filter</li>
+<li>理解过滤顺序的工程考量</li>
+<li>掌握 FilterResult 与候选追踪</li>
+</ol>
+<hr>
+<h2 id="_2">📚 前置知识</h2>
+<ul>
+<li>L05 中的 Hydrator/Filter trait</li>
+<li>L11-L12 中的管道组装</li>
+</ul>
+<hr>
+<h2 id="_3">正文讲解</h2>
+<h3 id="1-hydrator">1. 五大 Hydrator——给候选"填履历"</h3>
+<p>候选从 Source 出来时只有 <code>tweet_id</code> 和 <code>author_id</code>——就像只知道名字的陌生人。Hydrator 负责"调查背景"：</p>
+<table>
+<thead>
+<tr>
+<th>Hydrator</th>
+<th>数据源</th>
+<th>填充的字段</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>InNetworkCandidateHydrator</strong></td>
+<td>following list</td>
+<td><code>in_network: bool</code></td>
+</tr>
+<tr>
+<td><strong>CoreDataCandidateHydrator</strong></td>
+<td>TweetyPie 服务</td>
+<td><code>tweet_text, created_at, in_reply_to, retweeted_*, media</code></td>
+</tr>
+<tr>
+<td><strong>GizmoduckCandidateHydrator</strong></td>
+<td>Gizmoduck 服务</td>
+<td><code>author_followers_count, author_screen_name</code></td>
+</tr>
+<tr>
+<td><strong>VideoDurationCandidateHydrator</strong></td>
+<td>Media 服务</td>
+<td><code>video_duration_ms</code></td>
+</tr>
+<tr>
+<td><strong>SubscriptionHydrator</strong></td>
+<td>订阅服务</td>
+<td><code>subscription_author_id</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="innetworkcandidatehydrator">InNetworkCandidateHydrator</h4>
+<pre><code class="language-rust">async fn hydrate(&amp;self, query: &amp;Q, candidates: Vec&lt;PostCandidate&gt;) 
+    -&gt; Vec&lt;PostCandidate&gt; 
+{
+    let following_set: HashSet&lt;u64&gt; = 
+        query.user_features.following_ids.iter().copied().collect();
+
+    candidates.into_iter()
+        .map(|mut c| {
+            c.in_network = Some(following_set.contains(&amp;c.author_id));
+            c
+        })
+        .collect()
+}
+</code></pre>
+<h4 id="coredatacandidatehydrator">CoreDataCandidateHydrator</h4>
+<pre><code class="language-rust">async fn hydrate(&amp;self, _query: &amp;Q, candidates: Vec&lt;PostCandidate&gt;) 
+    -&gt; Vec&lt;PostCandidate&gt; 
+{
+    // 批量获取帖子元数据（一次 RPC 调用）
+    let tweet_ids: Vec&lt;i64&gt; = candidates.iter()
+        .map(|c| c.tweet_id)
+        .collect();
+
+    let tweet_data = self.tweetypie_client
+        .get_tweets(&amp;tweet_ids)
+        .await;
+
+    // 填充数据
+    candidates.into_iter()
+        .map(|mut c| {
+            if let Some(data) = tweet_data.get(&amp;c.tweet_id) {
+                c.tweet_text = data.text.clone();
+                c.in_reply_to_tweet_id = data.in_reply_to;
+                c.retweeted_tweet_id = data.retweeted_id;
+                // ... 更多字段
+            }
+            c  // 即使获取失败也保留候选（后续 Filter 会处理）
+        })
+        .collect()
+}
+</code></pre>
+<h3 id="2-pre-selection-filter">2. 十大 Pre-Selection Filter</h3>
+<p>过滤器按<strong>从粗到细</strong>的顺序排列，每一层筛掉一类问题：</p>
+<pre><code>380 条合并候选
+    │
+    ├── ① DropDuplicatesFilter    → 去除重复帖子 ID
+    ├── ② CoreDataHydrationFilter → 去除数据获取失败的帖子
+    ├── ③ AgeFilter               → 去除超过 30 天的帖子
+    ├── ④ SelfTweetFilter         → 去除用户自己发的帖子
+    ├── ⑤ RetweetDeduplicationFilter → 同一原帖的转发只保留一条
+    ├── ⑥ IneligibleSubscriptionFilter → 去除付费内容(用户未订阅)
+    ├── ⑦ PreviouslySeenPostsFilter → 去除已浏览过的帖子
+    ├── ⑧ PreviouslyServedPostsFilter → 去除本次会话已推送过的
+    ├── ⑨ MutedKeywordFilter       → 去除含静音关键词的帖子
+    └── ⑩ AuthorSocialgraphFilter  → 去除屏蔽/静音作者的帖子
+    │
+    ▼
+约 250 条候选进入评分
+</code></pre>
+<h4 id="1-dropduplicatesfilter">① DropDuplicatesFilter</h4>
+<pre><code class="language-rust">async fn filter(&amp;self, _query: &amp;Q, candidates: Vec&lt;PostCandidate&gt;) 
+    -&gt; FilterResult&lt;PostCandidate&gt; 
+{
+    let mut seen = HashSet::new();
+    let (kept, removed): (Vec&lt;_&gt;, Vec&lt;_&gt;) = candidates
+        .into_iter()
+        .partition(|c| seen.insert(c.tweet_id));
+
+    FilterResult { kept, removed }
+}
+</code></pre>
+<blockquote>
+<p>Thunder 和 Phoenix 可能返回同一条帖子（一条热门帖子既是关注用户发的，又被推荐算法选中），需要去重。</p>
+</blockquote>
+<h4 id="3-agefilter">③ AgeFilter</h4>
+<pre><code class="language-rust">async fn filter(&amp;self, _query: &amp;Q, candidates: Vec&lt;PostCandidate&gt;) 
+    -&gt; FilterResult&lt;PostCandidate&gt; 
+{
+    let now = SystemTime::now();
+    candidates.into_iter()
+        .partition(|c| {
+            c.created_at
+                .map(|t| now.duration_since(t).unwrap().as_secs() 
+                     &lt; self.max_age_seconds)
+                .unwrap_or(false)  // 没有创建时间的也过滤
+        })
+}
+</code></pre>
+<h4 id="5-retweetdeduplicationfilter">⑤ RetweetDeduplicationFilter</h4>
+<pre><code class="language-rust">async fn filter(&amp;self, _query: &amp;Q, candidates: Vec&lt;PostCandidate&gt;) 
+    -&gt; FilterResult&lt;PostCandidate&gt; 
+{
+    let mut seen_originals = HashSet::new();
+    candidates.into_iter()
+        .partition(|c| {
+            match c.retweeted_tweet_id {
+                Some(original_id) =&gt; seen_originals.insert(original_id),
+                None =&gt; true,  // 非转发，保留
+            }
+        })
+}
+</code></pre>
+<blockquote>
+<p>如果 10 个人都转发了同一条帖子，只保留第一条转发——避免信息流刷屏。</p>
+</blockquote>
+<h4 id="9-mutedkeywordfilter">⑨ MutedKeywordFilter</h4>
+<pre><code class="language-rust">async fn filter(&amp;self, query: &amp;Q, candidates: Vec&lt;PostCandidate&gt;) 
+    -&gt; FilterResult&lt;PostCandidate&gt; 
+{
+    let muted_keywords = &amp;query.user_features.muted_keywords;
+    candidates.into_iter()
+        .partition(|c| {
+            let text = c.tweet_text.to_lowercase();
+            !muted_keywords.iter().any(|kw| text.contains(kw))
+        })
+}
+</code></pre>
+<h4 id="10-authorsocialgraphfilter">⑩ AuthorSocialgraphFilter</h4>
+<pre><code class="language-rust">async fn filter(&amp;self, query: &amp;Q, candidates: Vec&lt;PostCandidate&gt;) 
+    -&gt; FilterResult&lt;PostCandidate&gt; 
+{
+    let blocked = &amp;query.user_features.blocked_ids;
+    let muted = &amp;query.user_features.muted_ids;
+
+    candidates.into_iter()
+        .partition(|c| {
+            !blocked.contains(&amp;c.author_id) 
+            &amp;&amp; !muted.contains(&amp;c.author_id)
+        })
+}
+</code></pre>
+<h3 id="3">3. 过滤顺序的工程考量</h3>
+<p>为什么按这个顺序排列？</p>
+<table>
+<thead>
+<tr>
+<th>原则</th>
+<th>说明</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>快→慢</strong></td>
+<td>计算简单的先执行</td>
+<td>DropDuplicates（O(1) HashSet）在前</td>
+</tr>
+<tr>
+<td><strong>多→少</strong></td>
+<td>过滤比例大的先执行</td>
+<td>去重可能过滤 5-10%</td>
+</tr>
+<tr>
+<td><strong>依赖顺序</strong></td>
+<td>依赖数据的 Filter 排在 Hydrator 之后</td>
+<td>CoreDataHydrationFilter 需要先 Hydrate</td>
+</tr>
+<tr>
+<td><strong>安全优先</strong></td>
+<td>安全相关的不能遗漏</td>
+<td>AuthorSocialgraph 必须执行</td>
+</tr>
+</tbody>
+</table>
+<h3 id="4-post-selection-filter">4. Post-Selection Filter</h3>
+<p>选择 Top-50 后，还有两道"安全防线"：</p>
+<h4 id="vffiltervisibility-filtering">VFFilter（Visibility Filtering）</h4>
+<pre><code class="language-rust">// 检查帖子是否因以下原因被标记不可见：
+// - 已删除
+// - 被判定为垃圾信息
+// - 包含暴力/血腥内容
+// - 违反平台政策
+// - 法律原因不可显示
+async fn filter(&amp;self, _query: &amp;Q, candidates: Vec&lt;PostCandidate&gt;) 
+    -&gt; FilterResult&lt;PostCandidate&gt; 
+{
+    candidates.into_iter()
+        .partition(|c| c.visibility_reason.is_none())
+}
+</code></pre>
+<h4 id="dedupconversationfilter">DedupConversationFilter</h4>
+<pre><code class="language-rust">// 同一个对话线程只保留一条帖子
+// 防止信息流被同一话题的多条回复占据
+async fn filter(&amp;self, _query: &amp;Q, candidates: Vec&lt;PostCandidate&gt;) 
+    -&gt; FilterResult&lt;PostCandidate&gt; 
+{
+    let mut seen_conversations = HashSet::new();
+    candidates.into_iter()
+        .partition(|c| {
+            let conversation_id = c.in_reply_to_tweet_id
+                .unwrap_or(c.tweet_id as u64);
+            seen_conversations.insert(conversation_id)
+        })
+}
+</code></pre>
+<hr>
+<h2 id="_4">💡 本节小结</h2>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>数量</th>
+<th>执行方式</th>
+<th>核心职责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hydration</td>
+<td>5 个</td>
+<td>并行</td>
+<td>补全帖子元数据</td>
+</tr>
+<tr>
+<td>Pre-Selection Filters</td>
+<td>10 个</td>
+<td>顺序</td>
+<td>去重、去旧、去违规</td>
+</tr>
+<tr>
+<td>Post-Selection Filters</td>
+<td>2 个</td>
+<td>顺序</td>
+<td>安全兜底、对话去重</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="13">📝 习题集13</h2>
+<p><strong>代码阅读：</strong>
+1. <code>CoreDataHydrationFilter</code> 是如何判断一个候选"数据获取失败"的？
+2. <code>RetweetDeduplicationFilter</code> 保留的是"第一条转发"——这个"第一条"是按什么顺序的？</p>
+<p><strong>设计思考：</strong>
+3. 如果要新增一个 Filter 过滤"没有图片或视频的纯文字帖子"，应该插在哪个位置？为什么？
+4. Pre-Selection 和 Post-Selection 为什么要分开？VFFilter 为什么不放在 Pre-Selection？</p>
+<hr>
+<blockquote>
+<p>下一课我们将学习 <strong>L14 - Scoring 全链路：从 ML 预测到最终排分</strong>。</p>
+</blockquote></article><div class="nav-links"><a href="lesson-L12.html">← L12 QueryHydration与CandidateSources</a><a href="lesson-L14.html">L14 Scoring全链路 →</a></div></div>
+<footer><div class="container">x-algorithm 学习教程 · 基于 X (Twitter) For You Feed 开源算法</div></footer>
+</body></html>

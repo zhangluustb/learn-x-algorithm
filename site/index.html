@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>首页 — x-algorithm 学习教程</title>
+<style>
+:root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+nav { background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 0; position: sticky; top: 0; z-index: 10; }
+nav .container { display: flex; gap: 2rem; align-items: center; }
+nav .logo { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+nav a { color: var(--muted); font-size: 0.9rem; }
+nav a:hover { color: var(--text); text-decoration: none; }
+.hero { text-align: center; padding: 4rem 0 3rem; }
+.hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+.phase { margin-bottom: 2.5rem; }
+.phase-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; padding-left: 0.5rem; border-left: 3px solid; }
+.lessons-grid { display: grid; gap: 0.75rem; }
+.lesson-card { background: var(--card); border-radius: 0.5rem; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s, box-shadow 0.15s; }
+.lesson-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-decoration: none; }
+.lesson-card .num { font-size: 0.85rem; font-weight: 700; color: var(--muted); min-width: 2.5rem; }
+.lesson-card .title { color: var(--text); }
+.section-title { font-size: 1.5rem; font-weight: 700; margin: 3rem 0 1.5rem; }
+article { background: var(--card); border-radius: 0.75rem; padding: 2.5rem; margin: 2rem 0 3rem; }
+article h1 { font-size: 1.75rem; margin-bottom: 1.5rem; }
+article h2 { font-size: 1.35rem; margin: 2rem 0 0.75rem; color: var(--accent); }
+article h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+article p { margin-bottom: 1rem; }
+article ul, article ol { margin: 0.5rem 0 1rem 1.5rem; }
+article li { margin-bottom: 0.35rem; }
+article code { background: #334155; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
+article pre { background: #0f172a; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+article pre code { background: transparent; padding: 0; }
+article blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--muted); margin: 1rem 0; }
+article table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+article th, article td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
+article th { background: #334155; }
+article strong { color: #f1f5f9; }
+.breadcrumb { color: var(--muted); margin: 1.5rem 0 0; font-size: 0.9rem; }
+.breadcrumb a { color: var(--muted); }
+.nav-links { display: flex; justify-content: space-between; margin: 2rem 0 3rem; }
+.nav-links a { background: var(--card); padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; }
+footer { border-top: 1px solid #334155; padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: auto; }
+</style>
+</head>
+<body>
+<nav><div class="container">
+<span class="logo">📘 x-algorithm 学习教程</span>
+<a href="index.html">首页</a>
+<a href="learn.html">课程</a>
+<a href="interview.html">面试</a>
+</div></nav>
+<div class="container">
+<div class="hero">
+<h1>x-algorithm 学习教程</h1>
+<p>深入理解 X (Twitter) For You Feed 推荐算法 · 20节课程 + 10套面试题</p>
+</div>
+<div class="section-title">📚 学习路径</div>
+<div class="phase"><div class="phase-title" style="border-color:#10b981;color:#10b981">阶段1 · 基础入门</div><div class="lessons-grid"><a class="lesson-card" href="lesson-L01.html"><span class="num">🟢 L01</span><span class="title">推荐系统简介与ForYou信息流概览</span></a>
+<a class="lesson-card" href="lesson-L02.html"><span class="num">🟢 L02</span><span class="title">Transformer基础与注意力机制</span></a>
+<a class="lesson-card" href="lesson-L03.html"><span class="num">🟢 L03</span><span class="title">Rust与Python技术栈快速上手</span></a>
+<a class="lesson-card" href="lesson-L04.html"><span class="num">🟢 L04</span><span class="title">x-algorithm项目导览</span></a>
+</div></div>
+<div class="phase"><div class="phase-title" style="border-color:#3b82f6;color:#3b82f6">阶段2 · 核心组件拆解</div><div class="lessons-grid"><a class="lesson-card" href="lesson-L05.html"><span class="num">🔵 L05</span><span class="title">CandidatePipeline框架设计</span></a>
+<a class="lesson-card" href="lesson-L06.html"><span class="num">🔵 L06</span><span class="title">Thunder实时帖子存储引擎</span></a>
+<a class="lesson-card" href="lesson-L07.html"><span class="num">🔵 L07</span><span class="title">PhoenixGrok模型架构上</span></a>
+<a class="lesson-card" href="lesson-L08.html"><span class="num">🔵 L08</span><span class="title">PhoenixGrok模型架构下</span></a>
+<a class="lesson-card" href="lesson-L09.html"><span class="num">🔵 L09</span><span class="title">Phoenix排序模型多行为预测</span></a>
+<a class="lesson-card" href="lesson-L10.html"><span class="num">🔵 L10</span><span class="title">Phoenix检索模型双塔架构</span></a>
+</div></div>
+<div class="phase"><div class="phase-title" style="border-color:#8b5cf6;color:#8b5cf6">阶段3 · 完整流程串联</div><div class="lessons-grid"><a class="lesson-card" href="lesson-L11.html"><span class="num">🟣 L11</span><span class="title">HomeMixer编排层总览</span></a>
+<a class="lesson-card" href="lesson-L12.html"><span class="num">🟣 L12</span><span class="title">QueryHydration与CandidateSources</span></a>
+<a class="lesson-card" href="lesson-L13.html"><span class="num">🟣 L13</span><span class="title">Hydration与Filtering详解</span></a>
+<a class="lesson-card" href="lesson-L14.html"><span class="num">🟣 L14</span><span class="title">Scoring全链路</span></a>
+<a class="lesson-card" href="lesson-L15.html"><span class="num">🟣 L15</span><span class="title">Selection与PostProcessing</span></a>
+</div></div>
+<div class="phase"><div class="phase-title" style="border-color:#f59e0b;color:#f59e0b">阶段4 · 高级特性与面试</div><div class="lessons-grid"><a class="lesson-card" href="lesson-L16.html"><span class="num">🟠 L16</span><span class="title">系统设计深度分析</span></a>
+<a class="lesson-card" href="lesson-L17.html"><span class="num">🟠 L17</span><span class="title">性能优化与工程实践</span></a>
+<a class="lesson-card" href="lesson-L18.html"><span class="num">🟠 L18</span><span class="title">部署架构与监控</span></a>
+<a class="lesson-card" href="lesson-L19.html"><span class="num">🟠 L19</span><span class="title">简历撰写指南</span></a>
+<a class="lesson-card" href="lesson-L20.html"><span class="num">🟠 L20</span><span class="title">STAR面试法完整稿</span></a>
+</div></div>
+
+<div class="section-title">🎯 面试准备</div>
+<div class="lessons-grid"><a class="lesson-card" href="interview-01.html"><span class="num">📝 01</span><span class="title">项目介绍话术</span></a>
+<a class="lesson-card" href="interview-02.html"><span class="num">📝 02</span><span class="title">推荐系统基础面试题</span></a>
+<a class="lesson-card" href="interview-03.html"><span class="num">📝 03</span><span class="title">Transformer与深度学习面试题</span></a>
+<a class="lesson-card" href="interview-04.html"><span class="num">📝 04</span><span class="title">系统设计与Rust工程面试题</span></a>
+<a class="lesson-card" href="interview-05.html"><span class="num">📝 05</span><span class="title">综合追问与深挖题</span></a>
+<a class="lesson-card" href="interview-06.html"><span class="num">📝 06</span><span class="title">Transformer注意力机制深度拷问30题</span></a>
+<a class="lesson-card" href="interview-07.html"><span class="num">📝 07</span><span class="title">推荐系统排序模型面试50题</span></a>
+<a class="lesson-card" href="interview-08.html"><span class="num">📝 08</span><span class="title">双塔检索模型面试30题</span></a>
+<a class="lesson-card" href="interview-09.html"><span class="num">📝 09</span><span class="title">Rust并发与系统工程面试30题</span></a>
+<a class="lesson-card" href="interview-10.html"><span class="num">📝 10</span><span class="title">x-algorithm专属面试50题</span></a>
+</div>
+</div>
+<footer><div class="container">x-algorithm 学习教程 · 基于 X (Twitter) For You Feed 开源算法</div></footer>
+</body></html>

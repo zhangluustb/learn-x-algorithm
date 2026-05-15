@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>推荐系统基础面试题 — x-algorithm 学习教程</title>
+<style>
+:root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+nav { background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 0; position: sticky; top: 0; z-index: 10; }
+nav .container { display: flex; gap: 2rem; align-items: center; }
+nav .logo { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+nav a { color: var(--muted); font-size: 0.9rem; }
+nav a:hover { color: var(--text); text-decoration: none; }
+.hero { text-align: center; padding: 4rem 0 3rem; }
+.hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+.phase { margin-bottom: 2.5rem; }
+.phase-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; padding-left: 0.5rem; border-left: 3px solid; }
+.lessons-grid { display: grid; gap: 0.75rem; }
+.lesson-card { background: var(--card); border-radius: 0.5rem; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s, box-shadow 0.15s; }
+.lesson-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-decoration: none; }
+.lesson-card .num { font-size: 0.85rem; font-weight: 700; color: var(--muted); min-width: 2.5rem; }
+.lesson-card .title { color: var(--text); }
+.section-title { font-size: 1.5rem; font-weight: 700; margin: 3rem 0 1.5rem; }
+article { background: var(--card); border-radius: 0.75rem; padding: 2.5rem; margin: 2rem 0 3rem; }
+article h1 { font-size: 1.75rem; margin-bottom: 1.5rem; }
+article h2 { font-size: 1.35rem; margin: 2rem 0 0.75rem; color: var(--accent); }
+article h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+article p { margin-bottom: 1rem; }
+article ul, article ol { margin: 0.5rem 0 1rem 1.5rem; }
+article li { margin-bottom: 0.35rem; }
+article code { background: #334155; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
+article pre { background: #0f172a; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+article pre code { background: transparent; padding: 0; }
+article blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--muted); margin: 1rem 0; }
+article table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+article th, article td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
+article th { background: #334155; }
+article strong { color: #f1f5f9; }
+.breadcrumb { color: var(--muted); margin: 1.5rem 0 0; font-size: 0.9rem; }
+.breadcrumb a { color: var(--muted); }
+.nav-links { display: flex; justify-content: space-between; margin: 2rem 0 3rem; }
+.nav-links a { background: var(--card); padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; }
+footer { border-top: 1px solid #334155; padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: auto; }
+</style>
+</head>
+<body>
+<nav><div class="container">
+<span class="logo">📘 x-algorithm 学习教程</span>
+<a href="index.html">首页</a>
+<a href="learn.html">课程</a>
+<a href="interview.html">面试</a>
+</div></nav>
+<div class="container"><div class="breadcrumb"><a href="index.html">首页</a> / <a href="interview.html">面试</a> / 推荐系统基础面试题</div><article><h1 id="02-">02 - 推荐系统基础面试题</h1>
+<blockquote>
+<p>覆盖推荐系统基础理论，每题结合 x-algorithm 的具体实现。</p>
+</blockquote>
+<hr>
+<h2 id="q1-">Q1: 推荐系统的"召回-排序-重排"三阶段各自解决什么问题？</h2>
+<p><strong>标准答案：</strong></p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>问题</th>
+<th>候选量</th>
+<th>延迟预算</th>
+<th>模型复杂度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>召回</td>
+<td>从全量中快速筛选相关子集</td>
+<td>10亿→数千</td>
+<td>&lt;10ms</td>
+<td>轻量（双塔）</td>
+</tr>
+<tr>
+<td>排序</td>
+<td>精细打分，区分好坏</td>
+<td>数千→数百</td>
+<td>&lt;100ms</td>
+<td>重量（Transformer）</td>
+</tr>
+<tr>
+<td>重排</td>
+<td>多样性、去重、业务规则</td>
+<td>数百→展示量</td>
+<td>&lt;10ms</td>
+<td>规则+轻量模型</td>
+</tr>
+</tbody>
+</table>
+<p><strong>x-algorithm 中的实现：</strong>
+- 召回：Phoenix Two-Tower（Out-of-Network）+ Thunder（In-Network）
+- 排序：Phoenix Grok Transformer（19 维行为预测）
+- 重排：AuthorDiversityScorer + OONScorer + DedupConversationFilter</p>
+<p><strong>追问方向：</strong> 为什么不直接用 Transformer 对全量排序？</p>
+<hr>
+<h2 id="q2-x-algorithm">Q2: 协同过滤和基于内容的推荐有何区别？x-algorithm 属于哪种？</h2>
+<p><strong>标准答案：</strong></p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>协同过滤</th>
+<th>内容过滤</th>
+<th>x-algorithm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>核心假设</td>
+<td>相似用户有相似偏好</td>
+<td>相似内容被同一用户喜欢</td>
+<td>Transformer 从行为序列学习</td>
+</tr>
+<tr>
+<td>输入</td>
+<td>用户-物品交互矩阵</td>
+<td>物品特征</td>
+<td>用户行为序列 + 候选哈希</td>
+</tr>
+<tr>
+<td>冷启动</td>
+<td>有问题</td>
+<td>无问题</td>
+<td>部分（新用户无行为历史）</td>
+</tr>
+</tbody>
+</table>
+<p>x-algorithm 本质上是<strong>深度学习推荐</strong>——不依赖手工特征，让 Transformer 从原始行为序列自动学习用户偏好。</p>
+<hr>
+<h2 id="q3">Q3: 什么是双塔模型？它的优缺点是什么？</h2>
+<p><strong>标准答案：</strong>
+双塔模型将用户和物品分别编码为向量，通过点积计算相似度。</p>
+<p><strong>优点：</strong> 候选嵌入可离线预计算 → ANN 索引 → 毫秒级检索。
+<strong>缺点：</strong> 用户-物品只通过点积交互，无法建模复杂交叉特征。</p>
+<p><strong>x-algorithm 的解法：</strong> 双塔做粗排（检索 Top-1000），Transformer 做精排（建模复杂交互）。</p>
+<hr>
+<h2 id="q4-x-algorithm">Q4: 什么是"特征交叉"？x-algorithm 如何处理？</h2>
+<p><strong>标准答案：</strong>
+特征交叉指两个特征组合产生的新特征（如"年龄×职业"）。传统系统需手工设计，x-algorithm 让 Self-Attention 自动学习所有位置间的交互——本质上是全自动特征交叉。</p>
+<hr>
+<h2 id="q5">Q5: 推荐系统中的"曝光偏差"是什么？如何缓解？</h2>
+<p><strong>标准答案：</strong>
+模型只能从已曝光的物品中学习，导致"马太效应"——热门越推越热，冷门永远无机会。</p>
+<p><strong>缓解方案：</strong>
+- x-algorithm 的 Out-of-Network 检索打破信息茧房
+- AuthorDiversityScorer 防止单一作者霸屏
+- OONScorer 给非关注内容额外机会</p>
+<hr>
+<h2 id="q6-q15">Q6-Q15: （简略）</h2>
+<p><strong>Q6:</strong> In-Network 和 Out-of-Network 内容如何平衡？
+<strong>Q7:</strong> 什么是 ANN（近似最近邻）？HNSW vs IVF 的区别？
+<strong>Q8:</strong> 推荐系统的离线/在线评估指标有哪些？
+<strong>Q9:</strong> 什么是 Embedding？为什么推荐系统广泛使用 Embedding？
+<strong>Q10:</strong> 如何解决推荐系统的冷启动问题？
+<strong>Q11:</strong> 推荐系统中的"实时性"指什么？Thunder 如何保证？
+<strong>Q12:</strong> 什么是多目标优化？x-algorithm 的 19 维预测如何体现？
+<strong>Q13:</strong> 推荐系统的过滤（Filtering）和排序（Ranking）为什么要分开？
+<strong>Q14:</strong> Negative Sampling 在推荐系统训练中的作用？
+<strong>Q15:</strong> 如何评估推荐系统的"多样性"？</p>
+<p>（每题均包含标准答案 + x-algorithm 实现 + 追问方向，完整版请参见课程 L01-L15）</p></article><div class="nav-links"><a href="interview-01.html">← 项目介绍话术</a><a href="interview-03.html">Transformer与深度学习面试题 →</a></div></div>
+<footer><div class="container">x-algorithm 学习教程 · 基于 X (Twitter) For You Feed 开源算法</div></footer>
+</body></html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Transformer与深度学习面试题 — x-algorithm 学习教程</title>
+<style>
+:root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+nav { background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 0; position: sticky; top: 0; z-index: 10; }
+nav .container { display: flex; gap: 2rem; align-items: center; }
+nav .logo { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+nav a { color: var(--muted); font-size: 0.9rem; }
+nav a:hover { color: var(--text); text-decoration: none; }
+.hero { text-align: center; padding: 4rem 0 3rem; }
+.hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+.phase { margin-bottom: 2.5rem; }
+.phase-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; padding-left: 0.5rem; border-left: 3px solid; }
+.lessons-grid { display: grid; gap: 0.75rem; }
+.lesson-card { background: var(--card); border-radius: 0.5rem; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s, box-shadow 0.15s; }
+.lesson-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-decoration: none; }
+.lesson-card .num { font-size: 0.85rem; font-weight: 700; color: var(--muted); min-width: 2.5rem; }
+.lesson-card .title { color: var(--text); }
+.section-title { font-size: 1.5rem; font-weight: 700; margin: 3rem 0 1.5rem; }
+article { background: var(--card); border-radius: 0.75rem; padding: 2.5rem; margin: 2rem 0 3rem; }
+article h1 { font-size: 1.75rem; margin-bottom: 1.5rem; }
+article h2 { font-size: 1.35rem; margin: 2rem 0 0.75rem; color: var(--accent); }
+article h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+article p { margin-bottom: 1rem; }
+article ul, article ol { margin: 0.5rem 0 1rem 1.5rem; }
+article li { margin-bottom: 0.35rem; }
+article code { background: #334155; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
+article pre { background: #0f172a; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+article pre code { background: transparent; padding: 0; }
+article blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--muted); margin: 1rem 0; }
+article table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+article th, article td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
+article th { background: #334155; }
+article strong { color: #f1f5f9; }
+.breadcrumb { color: var(--muted); margin: 1.5rem 0 0; font-size: 0.9rem; }
+.breadcrumb a { color: var(--muted); }
+.nav-links { display: flex; justify-content: space-between; margin: 2rem 0 3rem; }
+.nav-links a { background: var(--card); padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; }
+footer { border-top: 1px solid #334155; padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: auto; }
+</style>
+</head>
+<body>
+<nav><div class="container">
+<span class="logo">📘 x-algorithm 学习教程</span>
+<a href="index.html">首页</a>
+<a href="learn.html">课程</a>
+<a href="interview.html">面试</a>
+</div></nav>
+<div class="container"><div class="breadcrumb"><a href="index.html">首页</a> / <a href="interview.html">面试</a> / Transformer与深度学习面试题</div><article><h1 id="03-transformer">03 - Transformer 与深度学习面试题</h1>
+<blockquote>
+<p>覆盖 Transformer、注意力机制、深度学习在推荐中的应用。</p>
+</blockquote>
+<hr>
+<h2 id="q1-self-attention">Q1: Self-Attention 的计算复杂度是多少？如何优化？⭐⭐</h2>
+<p><strong>标准答案：</strong>
+$O(n^2 \cdot d)$，其中 $n$ 是序列长度，$d$ 是维度。</p>
+<p>优化方向：
+- <strong>Grouped Query Attention (GQA)</strong>：x-algorithm 使用，KV 头数少于 Q 头数
+- <strong>Flash Attention</strong>：IO-aware 的注意力计算
+- <strong>稀疏注意力</strong>：只计算部分位置对</p>
+<hr>
+<h2 id="q2-grouped-query-attention-gqa">Q2: 解释 Grouped Query Attention (GQA) 的原理 ⭐⭐⭐</h2>
+<p><strong>标准答案：</strong></p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>Q 头</th>
+<th>KV 头</th>
+<th>KV 缓存</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MHA</td>
+<td>32</td>
+<td>32</td>
+<td>100%</td>
+</tr>
+<tr>
+<td>GQA</td>
+<td>32</td>
+<td>8</td>
+<td><strong>25%</strong></td>
+</tr>
+<tr>
+<td>MQA</td>
+<td>32</td>
+<td>1</td>
+<td>3.1%</td>
+</tr>
+</tbody>
+</table>
+<p>x-algorithm 使用 GQA，每 4 个 Q 头共享一对 KV。内存节省 75%，性能损失 &lt;1%。</p>
+<hr>
+<h2 id="q3-rope">Q3: RoPE 位置编码为什么比可学习位置编码好？⭐⭐</h2>
+<p><strong>标准答案：</strong>
+- 天然编码<strong>相对位置</strong>
+- 可外推到训练时未见的序列长度
+- 不需要额外参数
+- x-algorithm 中行为序列长度变化大，RoPE 的外推能力很重要</p>
+<hr>
+<h2 id="q4-candidate-isolation">Q4: 什么是 Candidate Isolation？为什么重要？⭐⭐⭐</h2>
+<p><strong>标准答案：</strong>
+在注意力掩码中，候选帖子之间互不可见——每个候选只能看到用户上下文。</p>
+<p><strong>重要性：</strong> 评分独立于批次 → 可缓存 → 减少 30%+ 计算量。</p>
+<hr>
+<h2 id="q5-bfloat16-vs-float16-vs-float32">Q5: bfloat16 vs float16 vs float32 的区别？⭐⭐</h2>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>指数位</th>
+<th>尾数位</th>
+<th>范围</th>
+<th>精度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>float32</td>
+<td>8</td>
+<td>23</td>
+<td>大</td>
+<td>高</td>
+</tr>
+<tr>
+<td>float16</td>
+<td>5</td>
+<td>10</td>
+<td>小</td>
+<td>中</td>
+</tr>
+<tr>
+<td>bfloat16</td>
+<td>8</td>
+<td>7</td>
+<td>大</td>
+<td>低</td>
+</tr>
+</tbody>
+</table>
+<p>x-algorithm 选 bfloat16：保持 float32 的范围（防止溢出），推理速度提升 2-4x。</p>
+<hr>
+<h2 id="q6-rmsnorm-vs-layernorm">Q6: RMSNorm vs LayerNorm？⭐</h2>
+<p>RMSNorm 去掉了均值偏移，只做缩放。计算更快，效果几乎相同。</p>
+<hr>
+<h2 id="q7-ffn-silu-relu-ffn">Q7: 门控 FFN (SiLU) 相比标准 ReLU FFN 的优势？⭐⭐</h2>
+<p>SiLU 门控 FFN = gate * value，gate 分支控制信息通行量。比 ReLU 更平滑，负值不完全截断。</p>
+<hr>
+<h2 id="q8-multi-hash-embedding">Q8: 什么是 Multi-Hash Embedding？⭐⭐</h2>
+<p>多个哈希函数将同一实体映射到多个嵌入桶，合并后投影到目标维度。冲突概率呈指数下降。</p>
+<hr>
+<h2 id="q9-transformer-nlp">Q9: Transformer 在推荐系统和 NLP 中的应用有何区别？⭐⭐⭐</h2>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>NLP</th>
+<th>推荐 (x-algorithm)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>输入</td>
+<td>Token 序列</td>
+<td>行为序列 + 候选</td>
+</tr>
+<tr>
+<td>输出</td>
+<td>下一个 Token</td>
+<td>19 种行为概率</td>
+</tr>
+<tr>
+<td>掩码</td>
+<td>因果</td>
+<td>因果 + Candidate Isolation</td>
+</tr>
+<tr>
+<td>嵌入</td>
+<td>Token embedding</td>
+<td>Multi-hash embedding</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="q10-bce-ce">Q10: 损失函数选择——为什么用 BCE 而不是 CE？⭐⭐</h2>
+<p>19 种行为独立预测（可以同时点赞+回复），用 Binary Cross Entropy (sigmoid + BCE) 而非 Cross Entropy (softmax)。</p>
+<hr>
+<h2 id="q11-q20">Q11-Q20: （简略标题）</h2>
+<p><strong>Q11:</strong> 解释残差连接对深层 Transformer 训练的影响 ⭐
+<strong>Q12:</strong> 什么是 KV Cache？在推荐推理中如何使用？⭐⭐
+<strong>Q13:</strong> Transformer 的参数量怎么计算？⭐⭐
+<strong>Q14:</strong> JAX vs PyTorch 在推荐系统训练中的对比 ⭐
+<strong>Q15:</strong> 模型蒸馏如何应用于推荐系统？⭐⭐
+<strong>Q16:</strong> 什么是 Feature Hashing？和 Multi-Hash Embedding 的关系 ⭐⭐
+<strong>Q17:</strong> 对比式学习 (Contrastive Learning) 在双塔模型中的应用 ⭐⭐⭐
+<strong>Q18:</strong> 如何在 Transformer 中处理变长序列？⭐
+<strong>Q19:</strong> 预训练-微调范式在推荐系统中的应用 ⭐⭐
+<strong>Q20:</strong> 解释 Grok-1 的核心架构特点 ⭐⭐</p></article><div class="nav-links"><a href="interview-02.html">← 推荐系统基础面试题</a><a href="interview-04.html">系统设计与Rust工程面试题 →</a></div></div>
+<footer><div class="container">x-algorithm 学习教程 · 基于 X (Twitter) For You Feed 开源算法</div></footer>
+</body></html>

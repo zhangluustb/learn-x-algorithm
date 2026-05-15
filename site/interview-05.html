@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>综合追问与深挖题 — x-algorithm 学习教程</title>
+<style>
+:root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+nav { background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 0; position: sticky; top: 0; z-index: 10; }
+nav .container { display: flex; gap: 2rem; align-items: center; }
+nav .logo { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+nav a { color: var(--muted); font-size: 0.9rem; }
+nav a:hover { color: var(--text); text-decoration: none; }
+.hero { text-align: center; padding: 4rem 0 3rem; }
+.hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+.phase { margin-bottom: 2.5rem; }
+.phase-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; padding-left: 0.5rem; border-left: 3px solid; }
+.lessons-grid { display: grid; gap: 0.75rem; }
+.lesson-card { background: var(--card); border-radius: 0.5rem; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s, box-shadow 0.15s; }
+.lesson-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-decoration: none; }
+.lesson-card .num { font-size: 0.85rem; font-weight: 700; color: var(--muted); min-width: 2.5rem; }
+.lesson-card .title { color: var(--text); }
+.section-title { font-size: 1.5rem; font-weight: 700; margin: 3rem 0 1.5rem; }
+article { background: var(--card); border-radius: 0.75rem; padding: 2.5rem; margin: 2rem 0 3rem; }
+article h1 { font-size: 1.75rem; margin-bottom: 1.5rem; }
+article h2 { font-size: 1.35rem; margin: 2rem 0 0.75rem; color: var(--accent); }
+article h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+article p { margin-bottom: 1rem; }
+article ul, article ol { margin: 0.5rem 0 1rem 1.5rem; }
+article li { margin-bottom: 0.35rem; }
+article code { background: #334155; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
+article pre { background: #0f172a; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+article pre code { background: transparent; padding: 0; }
+article blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--muted); margin: 1rem 0; }
+article table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+article th, article td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
+article th { background: #334155; }
+article strong { color: #f1f5f9; }
+.breadcrumb { color: var(--muted); margin: 1.5rem 0 0; font-size: 0.9rem; }
+.breadcrumb a { color: var(--muted); }
+.nav-links { display: flex; justify-content: space-between; margin: 2rem 0 3rem; }
+.nav-links a { background: var(--card); padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; }
+footer { border-top: 1px solid #334155; padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: auto; }
+</style>
+</head>
+<body>
+<nav><div class="container">
+<span class="logo">📘 x-algorithm 学习教程</span>
+<a href="index.html">首页</a>
+<a href="learn.html">课程</a>
+<a href="interview.html">面试</a>
+</div></nav>
+<div class="container"><div class="breadcrumb"><a href="index.html">首页</a> / <a href="interview.html">面试</a> / 综合追问与深挖题</div><article><h1 id="05-">05 - 综合追问与深挖题</h1>
+<blockquote>
+<p>面试官可能的追问和深挖方向，需要跨模块综合理解。</p>
+</blockquote>
+<hr>
+<h2 id="q1-for-you">Q1: 从用户打开 For You 到看到第一条帖子，系统经历了哪些步骤？每步延迟多少？⭐⭐⭐</h2>
+<p><strong>标准答案：</strong></p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>组件</th>
+<th>延迟</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. gRPC 请求</td>
+<td>客户端 → Home Mixer</td>
+<td>~1ms</td>
+</tr>
+<tr>
+<td>2. Query Hydration</td>
+<td>UAS + Strato</td>
+<td>~50ms（并行）</td>
+</tr>
+<tr>
+<td>3. 候选获取</td>
+<td>Thunder + Phoenix</td>
+<td>~30ms（并行）</td>
+</tr>
+<tr>
+<td>4. 数据补全</td>
+<td>5 个 Hydrator</td>
+<td>~40ms（并行）</td>
+</tr>
+<tr>
+<td>5. 过滤</td>
+<td>10 个 Filter</td>
+<td>~10ms（顺序）</td>
+</tr>
+<tr>
+<td>6. 评分</td>
+<td>4 个 Scorer</td>
+<td>~100ms（顺序）</td>
+</tr>
+<tr>
+<td>7. 选择+后处理</td>
+<td>Selector + VF</td>
+<td>~20ms</td>
+</tr>
+<tr>
+<td><strong>总计</strong></td>
+<td></td>
+<td><strong>~250ms</strong></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="q2-10">Q2: 如果要支持 10 倍的用户量，系统需要哪些改动？⭐⭐⭐</h2>
+<p><strong>水平扩展：</strong>
+- Home Mixer：增加实例数
+- Thunder：按用户范围分片（每个实例负责一部分用户）
+- Phoenix：增加 GPU 实例</p>
+<p><strong>垂直优化：</strong>
+- 模型蒸馏：大模型 → 小模型
+- 分级排序：粗排模型 + 精排模型
+- 缓存更多 Phoenix 评分结果</p>
+<hr>
+<h2 id="q3">Q3: 推荐结果出现了"政治极化"问题，如何从算法层面缓解？⭐⭐⭐</h2>
+<ol>
+<li>增加负面行为（mute/block/report）的权重</li>
+<li>引入"内容多样性"Scorer</li>
+<li>减少同话题/同立场的连续推荐</li>
+<li>在 Filter 层加入"观点多样性"过滤</li>
+<li>A/B 测试验证效果</li>
+</ol>
+<hr>
+<h2 id="q4-candidate-isolation">Q4: Candidate Isolation 和标准因果掩码的详细对比？⭐⭐⭐</h2>
+<p>画出 5×5 掩码矩阵（1=可见，0=遮挡）：</p>
+<p>标准因果掩码（下三角）：所有位置因果可见
+Candidate Isolation：User+History 因果，Candidate 只看 User+History+自己</p>
+<p>关键区别：Candidate_2 看不到 Candidate_1。</p>
+<hr>
+<h2 id="q5-kafka-thunder">Q5: 如果 Kafka 丢消息了，Thunder 怎么恢复数据完整性？⭐⭐</h2>
+<ol>
+<li>Thunder 启动时从权威数据库全量加载</li>
+<li>Kafka 用 at-least-once 语义减少丢失</li>
+<li>定期从数据库增量同步补漏</li>
+<li>帖子有 TTL，即使丢失也会在 7 天内自然失效</li>
+</ol>
+<hr>
+<h2 id="q6-q15">Q6-Q15: （简略）</h2>
+<p><strong>Q6:</strong> 19 种行为中最难预测的是哪个？为什么？⭐⭐
+<strong>Q7:</strong> Hash 嵌入的桶数如何选择？太大/太小各有什么问题？⭐⭐
+<strong>Q8:</strong> 如果用户行为历式只有 5 条（新用户），模型效果如何保证？⭐⭐
+<strong>Q9:</strong> WeightedScorer 的权重是如何确定的？能否自动学习？⭐⭐⭐
+<strong>Q10:</strong> AuthorDiversityScorer 的 1/N 衰减是否最优？有没有更好的公式？⭐⭐
+<strong>Q11:</strong> 从工程角度分析 x-algorithm 代码库的优缺点 ⭐⭐⭐
+<strong>Q12:</strong> 如何让推荐系统具备"可解释性"？⭐⭐
+<strong>Q13:</strong> 多模态内容（图片/视频/文字）如何统一表征？⭐⭐⭐
+<strong>Q14:</strong> Grok-1 的 MoE（Mixture of Experts）能否用于推荐？⭐⭐⭐
+<strong>Q15:</strong> 对比 x-algorithm 和 TikTok/YouTube 推荐系统的架构差异 ⭐⭐⭐</p></article><div class="nav-links"><a href="interview-04.html">← 系统设计与Rust工程面试题</a><a href="interview-06.html">Transformer注意力机制深度拷问30题 →</a></div></div>
+<footer><div class="container">x-algorithm 学习教程 · 基于 X (Twitter) For You Feed 开源算法</div></footer>
+</body></html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Transformer注意力机制深度拷问30题 — x-algorithm 学习教程</title>
+<style>
+:root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+nav { background: var(--card); border-bottom: 1px solid #334155; padding: 1rem 0; position: sticky; top: 0; z-index: 10; }
+nav .container { display: flex; gap: 2rem; align-items: center; }
+nav .logo { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+nav a { color: var(--muted); font-size: 0.9rem; }
+nav a:hover { color: var(--text); text-decoration: none; }
+.hero { text-align: center; padding: 4rem 0 3rem; }
+.hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+.phase { margin-bottom: 2.5rem; }
+.phase-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; padding-left: 0.5rem; border-left: 3px solid; }
+.lessons-grid { display: grid; gap: 0.75rem; }
+.lesson-card { background: var(--card); border-radius: 0.5rem; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s, box-shadow 0.15s; }
+.lesson-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-decoration: none; }
+.lesson-card .num { font-size: 0.85rem; font-weight: 700; color: var(--muted); min-width: 2.5rem; }
+.lesson-card .title { color: var(--text); }
+.section-title { font-size: 1.5rem; font-weight: 700; margin: 3rem 0 1.5rem; }
+article { background: var(--card); border-radius: 0.75rem; padding: 2.5rem; margin: 2rem 0 3rem; }
+article h1 { font-size: 1.75rem; margin-bottom: 1.5rem; }
+article h2 { font-size: 1.35rem; margin: 2rem 0 0.75rem; color: var(--accent); }
+article h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+article p { margin-bottom: 1rem; }
+article ul, article ol { margin: 0.5rem 0 1rem 1.5rem; }
+article li { margin-bottom: 0.35rem; }
+article code { background: #334155; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
+article pre { background: #0f172a; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+article pre code { background: transparent; padding: 0; }
+article blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--muted); margin: 1rem 0; }
+article table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+article th, article td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
+article th { background: #334155; }
+article strong { color: #f1f5f9; }
+.breadcrumb { color: var(--muted); margin: 1.5rem 0 0; font-size: 0.9rem; }
+.breadcrumb a { color: var(--muted); }
+.nav-links { display: flex; justify-content: space-between; margin: 2rem 0 3rem; }
+.nav-links a { background: var(--card); padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; }
+footer { border-top: 1px solid #334155; padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: auto; }
+</style>
+</head>
+<body>
+<nav><div class="container">
+<span class="logo">📘 x-algorithm 学习教程</span>
+<a href="index.html">首页</a>
+<a href="learn.html">课程</a>
+<a href="interview.html">面试</a>
+</div></nav>
+<div class="container"><div class="breadcrumb"><a href="index.html">首页</a> / <a href="interview.html">面试</a> / Transformer注意力机制深度拷问30题</div><article><h1 id="06-transformer-30">06 - Transformer 注意力机制深度拷问 30 题</h1>
+<blockquote>
+<p>每题含标准答案、x-algorithm 实现对照、追问方向。</p>
+</blockquote>
+<hr>
+<h2 id="q1-self-attention-sqrtd_k">Q1: Self-Attention 为什么要除以 $\sqrt{d_k}$？⭐</h2>
+<p><strong>答案：</strong> 当 $d_k$ 较大时，$Q$ 和 $K$ 的点积方差约为 $d_k$，导致 softmax 趋于 one-hot，梯度接近零。除以 $\sqrt{d_k}$ 使方差归一化到 1。</p>
+<p><strong>追问：</strong> 如果不除会怎样？模型能学到正确的 attention pattern 吗？</p>
+<hr>
+<h2 id="q2-gqa-kv">Q2: GQA 的 KV 头数设为多少最优？⭐⭐</h2>
+<p><strong>答案：</strong> 经验上 Q:KV = 4:1 到 8:1 是最佳区间。x-algorithm 用 32:8 (4:1)。</p>
+<p>$\text{KV 缓存} = 2 \times H_{kv} \times d_k \times L \times N_{layers} \times \text{sizeof}(\text{dtype})$</p>
+<hr>
+<h2 id="q3-rope">Q3: RoPE 如何编码相对位置？给出数学证明。⭐⭐⭐</h2>
+<p><strong>答案：</strong> 对位置 $m$ 和 $n$ 的向量：
+$$\langle \text{RoPE}(q, m), \text{RoPE}(k, n) \rangle = f(q, k, m-n)$$</p>
+<p>证明利用旋转矩阵的性质：$R_m^T R_n = R_{n-m}$</p>
+<hr>
+<h2 id="q4-candidate-isolation">Q4: Candidate Isolation 掩码的完整构造方法？⭐⭐⭐</h2>
+<p><strong>答案：</strong>
+1. User + History 位置：标准下三角因果掩码
+2. 每个 Candidate 位置：只看 User+History 全部 + 自己
+3. 用 -1e9 填充不可见位置（softmax 后趋于 0）</p>
+<hr>
+<h2 id="q5-multihead-attention">Q5: MultiHead Attention 的参数量计算 ⭐⭐</h2>
+<p>$$\text{Params} = 4 \times d_{model} \times d_{model} = 4d^2 \text{ (Q,K,V,O 四个投影)}$$</p>
+<p>GQA 下：$\text{Params} = d(H_q \cdot d_k + 2 \cdot H_{kv} \cdot d_k + d)$</p>
+<hr>
+<h2 id="q6-q30">Q6-Q30: （标题列表）</h2>
+<p><strong>Q6:</strong> Flash Attention 的 IO 优化原理 ⭐⭐⭐
+<strong>Q7:</strong> KV Cache 在增量推理中的作用 ⭐⭐
+<strong>Q8:</strong> 注意力分数的稀疏性分析 ⭐⭐
+<strong>Q9:</strong> Pre-Norm vs Post-Norm 对梯度流的影响 ⭐⭐
+<strong>Q10:</strong> 多头注意力中不同头学到了什么？⭐⭐
+<strong>Q11:</strong> 注意力权重可以用来解释推荐结果吗？⭐⭐
+<strong>Q12:</strong> Sliding Window Attention 的适用场景 ⭐⭐
+<strong>Q13:</strong> ALiBi 和 RoPE 位置编码对比 ⭐⭐⭐
+<strong>Q14:</strong> 注意力模式在用户行为序列中的体现 ⭐⭐
+<strong>Q15:</strong> 如何可视化推荐 Transformer 的注意力矩阵？⭐⭐
+<strong>Q16:</strong> Attention is Not All You Need? FFN 的作用 ⭐⭐
+<strong>Q17:</strong> Linear Attention 能否替代 Softmax Attention？⭐⭐⭐
+<strong>Q18:</strong> 长序列处理：Ring Attention / Sequence Parallelism ⭐⭐⭐
+<strong>Q19:</strong> Cross-Attention 在检索增强推荐中的应用 ⭐⭐
+<strong>Q20:</strong> 注意力掩码的不同设计对推荐质量的影响 ⭐⭐⭐
+<strong>Q21:</strong> SiLU vs GELU vs ReLU 激活函数对比 ⭐⭐
+<strong>Q22:</strong> FFN 的 widening_factor 如何影响模型容量？⭐⭐
+<strong>Q23:</strong> MoE (Mixture of Experts) 的路由机制 ⭐⭐⭐
+<strong>Q24:</strong> 梯度裁剪在 Transformer 训练中的必要性 ⭐
+<strong>Q25:</strong> 学习率 Warmup + Cosine Decay 的原理 ⭐⭐
+<strong>Q26:</strong> 混合精度训练中的 Loss Scaling ⭐⭐
+<strong>Q27:</strong> 模型并行 vs 数据并行 vs 流水线并行 ⭐⭐⭐
+<strong>Q28:</strong> Transformer 的推理优化技术综述 ⭐⭐
+<strong>Q29:</strong> 量化 (INT8/INT4) 在推荐推理中的应用 ⭐⭐
+<strong>Q30:</strong> 未来方向：State Space Models 能否替代 Transformer？⭐⭐⭐</p></article><div class="nav-links"><a href="interview-05.html">← 综合追问与深挖题</a><a href="interview-07.html">推荐系统排序模型面试50题 →</a></div></div>
+<footer><div class="container">x-algorithm 学习教程 · 基于 X (Twitter) For You Feed 开源算法</div></footer>
+</body></html>
